@@ -1,7 +1,7 @@
 package car
 
 import (
-	"CarShar/dal"
+	"Carshar/dal"
 	"encoding/json"
 	"log"
 	"net/http"

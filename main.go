@@ -1,10 +1,10 @@
 package main
 
 import (
-	"CarShar/api"
-	"CarShar/api/handlers/auth"
-	"CarShar/api/handlers/car"
-	"CarShar/dal"
+	"Carshar/api"
+	"Carshar/api/handlers/auth"
+	"Carshar/api/handlers/car"
+	"Carshar/dal"
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"

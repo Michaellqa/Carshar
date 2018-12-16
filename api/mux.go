@@ -1,8 +1,8 @@
 package api
 
 import (
-	"CarShar/api/handlers/auth"
-	"CarShar/api/handlers/car"
+	"Carshar/api/handlers/auth"
+	"Carshar/api/handlers/car"
 	"github.com/gorilla/mux"
 	"net/http"
 )

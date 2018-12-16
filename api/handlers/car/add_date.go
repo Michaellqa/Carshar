@@ -1,8 +1,8 @@
 package car
 
 import (
-	"CarShar/api/handlers/auth"
-	"CarShar/dal"
+	"Carshar/api/handlers/auth"
+	"Carshar/dal"
 	"encoding/json"
 	"log"
 	"net/http"
