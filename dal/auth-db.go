@@ -2,6 +2,7 @@ package dal
 
 import (
 	"database/sql"
+	"github.com/lib/pq"
 	"log"
 )
 
@@ -24,16 +25,21 @@ func NewAuthDb(db *sql.DB) *AuthDb {
 	return &AuthDb{db: db}
 }
 
-func (a *AuthDb) CreateUser(u User) error {
+func (a *AuthDb) CreateUser(u User) (bool, error) {
 	_, err := a.db.Exec(SqlCreateUser, u.Phone, u.Password, u.Name, u.BirthDate)
+
+	// 23505 unique values conflict
+	if per := err.(*pq.Error); per.Code != pq.ErrorCode(23505) {
+		return false, nil
+	}
+
 	if err != nil {
 		log.Println(err)
-		return err
+		return false, err
 	}
-	return nil
+	return true, nil
 }
 
-//return User, flag that user exists, error
 func (a *AuthDb) FindUser(phone string) (User, bool, error) {
 	var (
 		u User

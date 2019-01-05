@@ -1,7 +1,8 @@
 package dal
 
 type AuthRepository interface {
-	CreateUser(user User) error
+	CreateUser(user User) (bool, error)
+	//returned bool indicates if user was found
 	FindUser(phone string) (User, bool, error)
 }
 

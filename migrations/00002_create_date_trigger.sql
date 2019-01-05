@@ -1,5 +1,7 @@
 -- +goose Up
 
+-- Trigger check if there is a rent that intersects with new the one, which is going to be inserted
+
 -- +goose StatementBegin
 CREATE  FUNCTION t_check_dates() RETURNS TRIGGER
 LANGUAGE plpgsql

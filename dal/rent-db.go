@@ -8,7 +8,6 @@ import (
 /*
 	RemoveDate(did int) error
 	RentHistory(uid int) (History, error)
-}
 */
 
 const (

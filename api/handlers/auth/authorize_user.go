@@ -18,22 +18,22 @@ func NewAuthHandler(db dal.AuthRepository) AuthorizeHandler {
 func (h AuthorizeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json charset=utf-8")
 
-	phone := r.FormValue("phone")
-	pass := r.FormValue("password")
+	phone := r.FormValue("Phone")
+	pass := r.FormValue("Password")
 
 	if phone == "" || pass == "" {
 		w.WriteHeader(400)
 		return
 	}
 
-	user, ok, err := h.db.FindUser(phone)
+	user, found, err := h.db.FindUser(phone)
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(502)
 		return
 	}
 
-	if !ok {
+	if !found {
 		w.WriteHeader(404)
 		return
 	}
@@ -46,9 +46,4 @@ func (h AuthorizeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		w.WriteHeader(502)
 	}
-}
-
-type UserPass struct {
-	Phone string
-	Pass  string
 }

@@ -41,6 +41,7 @@ func provideServer(port int, done chan struct{}) *api.Server {
 
 	authHandler := auth.NewAuthHandler(authDb)
 	userHandler := auth.NewCreateUserHandler(authDb)
+
 	addCarHandler := car.NewAddCarHandler(carDb)
 	carListHandler := car.NewCarListHandler(carDb)
 	findCarHandler := car.NewFindCarHandler(carDb)

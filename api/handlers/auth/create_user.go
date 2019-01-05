@@ -25,11 +25,19 @@ func (h CreateUserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.db.CreateUser(user)
+	if user.Name == "" || user.Password == "" || user.Phone == "" {
+		w.WriteHeader(400)
+		return
+	}
 
-	//TODO if user exist - conflict
-
+	ok, err := h.db.CreateUser(user)
 	if err != nil {
 		w.WriteHeader(502)
+		return
+	}
+
+	if !ok {
+		w.WriteHeader(409)
+		return
 	}
 }
