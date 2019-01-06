@@ -29,7 +29,7 @@ func (a *AuthDb) CreateUser(u User) (bool, error) {
 	_, err := a.db.Exec(SqlCreateUser, u.Phone, u.Password, u.Name, u.BirthDate)
 
 	// 23505 unique values conflict
-	if per := err.(*pq.Error); per.Code != pq.ErrorCode(23505) {
+	if per := err.(*pq.Error); per.Code == "23505" {
 		return false, nil
 	}
 

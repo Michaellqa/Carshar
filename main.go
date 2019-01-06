@@ -9,6 +9,7 @@ import (
 	"fmt"
 	_ "github.com/lib/pq"
 	"github.com/pressly/goose"
+	"log"
 )
 
 const (
@@ -17,6 +18,8 @@ const (
 )
 
 func main() {
+	log.SetFlags(log.Lshortfile)
+
 	doneSignal := make(chan struct{})
 	port := 8080
 

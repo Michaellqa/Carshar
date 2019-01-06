@@ -3,6 +3,7 @@ package renting
 import (
 	"Carshar/dal"
 	"net/http"
+	"time"
 )
 
 type RentHistoryHandler struct {
@@ -23,4 +24,10 @@ func (h RentHistoryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	//}
 
 	//TODO
+}
+
+type History struct {
+	Model     string
+	DateStart time.Time
+	Total     float32
 }

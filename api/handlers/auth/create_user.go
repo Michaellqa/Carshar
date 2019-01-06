@@ -27,6 +27,7 @@ func (h CreateUserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if user.Name == "" || user.Password == "" || user.Phone == "" {
 		w.WriteHeader(400)
+		w.Write([]byte("All required fields should be filled"))
 		return
 	}
 

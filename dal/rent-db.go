@@ -22,7 +22,7 @@ SELECT "Id", "Model", "Year", "Image", "Mileage" FROM "Car"
 WHERE "Id" = $1;
 `
 	SqlCarPrices = `
-SELECT "TimeUnit", "Price" FROM "TimePrice"
+SELECT "TimeUnit", "Price" FROM "Price"
 WHERE "CarId" = $1;
 `
 	SqlCarDates = `
@@ -42,7 +42,7 @@ INSERT INTO "Car" ("OwnerId", "Model", "Year", "Image", "Mileage") VALUES
 ($1, $2, $3, $4, $5)
 `
 	SqlCreatePrice = `
-INSERT INTO "PriceItem" ("CarId", "TimeUnit", "Price") VALUES 
+INSERT INTO "Price" ("CarId", "TimeUnit", "Price") VALUES 
 ($1, $2, $3)
 `
 	SqlCreateDate = `
@@ -99,7 +99,7 @@ func (r *RentDb) FindCar(id int) (car CarFullDescription, err error) {
 	}
 	for rows.Next() {
 		date := AvailableDate{}
-		err := rows.Scan(&date.DayOfWeek, &date.TimeStart, &date.TimeEnd)
+		err := rows.Scan(&date.DayOfWeek, &date.StartTime, &date.EndTime)
 		if err != nil {
 			log.Println(err)
 			continue
@@ -126,7 +126,7 @@ func (r *RentDb) FindCar(id int) (car CarFullDescription, err error) {
 }
 
 func (r *RentDb) CreateCar(car Car) error {
-	_, err := r.db.Exec(SqlCreateCar, car.OwnerId, car.Model, car.Year, car.Mileage, car.Image)
+	_, err := r.db.Exec(SqlCreateCar, car.OwnerId, car.Model, car.Year, car.Image, car.Mileage)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -135,7 +135,7 @@ func (r *RentDb) CreateCar(car Car) error {
 }
 
 func (r *RentDb) CreateRent(rent Rent) error {
-	_, err := r.db.Exec(SqlCreateRent, rent.CarId, rent.RenterId, rent.TimeStart, rent.TimeEnd, rent.Total)
+	_, err := r.db.Exec(SqlCreateRent, rent.CarId, rent.RenterId, rent.StartTime, rent.EndTime, rent.Total)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -153,7 +153,7 @@ func (r *RentDb) CreatePrice(carId int, p PriceItem) error {
 }
 
 func (r *RentDb) CreateDate(carId int, d AvailableDate) error {
-	_, err := r.db.Exec(SqlCreateDate, carId, d.DayOfWeek, d.TimeStart, d.TimeEnd)
+	_, err := r.db.Exec(SqlCreateDate, carId, d.DayOfWeek, d.StartTime, d.EndTime)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -171,7 +171,7 @@ func (r *RentDb) RentHistory(uid int) ([]Rent, error) {
 	rents := make([]Rent, 0)
 	for rows.Next() {
 		r := Rent{}
-		err := rows.Scan(&r.CarId, &r.RenterId, &r.TimeStart, &r.TimeEnd, &r.Total)
+		err := rows.Scan(&r.CarId, &r.RenterId, &r.StartTime, &r.EndTime, &r.Total)
 		if err != nil {
 			log.Println(err)
 			continue

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 )
 
 type AddDateHandler struct {
@@ -19,7 +20,7 @@ func NewAddDateHandler(db dal.CarsharRepository) AddDateHandler {
 func (h AddDateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json charset=utf-8")
 
-	uid, err := auth.UserToken(r)
+	_, err := auth.UserToken(r)
 	if err != nil {
 		w.WriteHeader(403)
 		return
@@ -32,8 +33,15 @@ func (h AddDateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.db.CreateDate(uid, date)
+	err = h.db.CreateDate(date.CarId, date)
 	if err != nil {
 		w.WriteHeader(502)
 	}
+}
+
+type Date struct {
+	Id        int       `json:"-"`
+	DayOfWeek int       `json:"DayOfWeek"`
+	TimeStart time.Time `json:"StartTim"`
+	TimeEnd   time.Time `json:"TimeEnd"`
 }

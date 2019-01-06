@@ -23,7 +23,7 @@ func NewMux(
 
 	mx.Handle("/cars", addCarHandler).Methods(http.MethodPost)
 	mx.Handle("/cars", carListHandler).Methods(http.MethodGet)
-	mx.Handle("/car/{query}", findCarHandler).Methods(http.MethodPost)
+	mx.Handle("/car/{id}", findCarHandler).Methods(http.MethodGet)
 
 	mx.Handle("/car/dates", addDateHandler).Methods(http.MethodPost)
 	mx.Handle("/car/prices", addPriceHandler).Methods(http.MethodPost)

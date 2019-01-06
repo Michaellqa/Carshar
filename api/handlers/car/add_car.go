@@ -1,6 +1,7 @@
 package car
 
 import (
+	"Carshar/api/handlers/auth"
 	"Carshar/dal"
 	"encoding/json"
 	"log"
@@ -18,14 +19,22 @@ func NewAddCarHandler(db dal.CarsharRepository) AddCarHandler {
 func (h AddCarHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json charset=utf-8")
 
+	uid, err := auth.UserToken(r)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(403)
+		return
+	}
+
 	var car dal.Car
 	if err := json.NewDecoder(r.Body).Decode(&car); err != nil {
 		log.Println(err)
 		w.WriteHeader(400)
 		return
 	}
+	car.OwnerId = uid
 
-	err := h.db.CreateCar(car)
+	err = h.db.CreateCar(car)
 	if err != nil {
 		w.WriteHeader(502)
 	}

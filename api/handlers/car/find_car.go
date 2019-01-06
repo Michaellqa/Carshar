@@ -3,8 +3,10 @@ package car
 import (
 	"Carshar/dal"
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type FindCarHandler struct {
@@ -18,15 +20,26 @@ func NewFindCarHandler(db dal.CarsharRepository) FindCarHandler {
 func (h FindCarHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json charset=utf-8")
 
-	var car dal.Car
-	if err := json.NewDecoder(r.Body).Decode(&car); err != nil {
-		log.Println(err)
+	id, ok := mux.Vars(r)["id"]
+	if !ok {
 		w.WriteHeader(400)
 		return
 	}
 
-	err := h.db.CreateCar(car)
+	carId, err := strconv.ParseInt(id, 10, 0)
 	if err != nil {
+		w.WriteHeader(400)
+		return
+	}
+
+	desc, err := h.db.FindCar(int(carId))
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(400)
+	}
+
+	if err := json.NewEncoder(w).Encode(desc); err != nil {
+		log.Println(err)
 		w.WriteHeader(502)
 	}
 }
