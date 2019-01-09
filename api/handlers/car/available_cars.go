@@ -20,7 +20,7 @@ func (h CarListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json charset=utf-8")
 
 	idStr := r.Header.Get("Authorization")
-	uid, err := strconv.ParseInt(idStr, 10, -1)
+	uid, err := strconv.ParseInt(idStr, 10, 0)
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(400)

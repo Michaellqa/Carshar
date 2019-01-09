@@ -12,10 +12,12 @@ import (
 
 const (
 	SqlAvailableCars = `
-SELECT "Car"."Id", "Name", "Year"
-FROM "Car" RIGHT JOIN "AvailableDate"
-ON "Car"."Id" = "AvailableDate"."CarId"
-WHERE "Car"."OwnerId" <> $1;
+-- SELECT "Car"."Id", "Model", "Year"
+-- FROM "Car" RIGHT JOIN "Date"
+-- ON "Car"."Id" = "Date"."CarId"
+-- WHERE "Car"."OwnerId" <> $1;
+SELECT "Id", "Model", "Year"
+from "Car" WHERE "OwnerId" <> $1
 `
 	SqlFindCar = `
 SELECT "Id", "Model", "Year", "Image", "Mileage" FROM "Car"
@@ -38,8 +40,8 @@ SELECT "CarId", "TimeStart", "TimeEnd", "TotalPrice" FROM "Rent"
 WHERE "UserId" = $1;
 `
 	SqlCreateCar = `
-INSERT INTO "Car" ("OwnerId", "Model", "Year", "Image", "Mileage") VALUES 
-($1, $2, $3, $4, $5)
+INSERT INTO "Car" ("OwnerId", "Model", "Year", "Image", "Mileage", "Vin") VALUES 
+($1, $2, $3, $4, $5, $6)
 `
 	SqlCreatePrice = `
 INSERT INTO "Price" ("CarId", "TimeUnit", "Price") VALUES 
@@ -126,7 +128,7 @@ func (r *RentDb) FindCar(id int) (car CarFullDescription, err error) {
 }
 
 func (r *RentDb) CreateCar(car Car) error {
-	_, err := r.db.Exec(SqlCreateCar, car.OwnerId, car.Model, car.Year, car.Image, car.Mileage)
+	_, err := r.db.Exec(SqlCreateCar, car.OwnerId, car.Model, car.Year, car.Image, car.Mileage, car.Vin)
 	if err != nil {
 		log.Println(err)
 		return err

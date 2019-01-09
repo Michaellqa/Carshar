@@ -2,9 +2,9 @@ package auth
 
 import (
 	"Carshar/dal"
-	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type AuthorizeHandler struct {
@@ -16,7 +16,7 @@ func NewAuthHandler(db dal.AuthRepository) AuthorizeHandler {
 }
 
 func (h AuthorizeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "application/json charset=utf-8")
+	w.Header().Add("Content-Type", "text/plain charset=utf-8")
 
 	phone := r.FormValue("Phone")
 	pass := r.FormValue("Password")
@@ -42,8 +42,12 @@ func (h AuthorizeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(403)
 		return
 	}
-	if err := json.NewEncoder(w).Encode(user); err != nil {
-		log.Println(err)
-		w.WriteHeader(502)
-	}
+
+	id := strconv.FormatInt(int64(user.Id), 10)
+	w.Write([]byte(id))
+
+	//if err := json.NewEncoder(w).Encode(user); err != nil {
+	//	log.Println(err)
+	//	w.WriteHeader(502)
+	//}
 }

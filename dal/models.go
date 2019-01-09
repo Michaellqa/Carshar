@@ -17,6 +17,7 @@ type Car struct {
 	Year    int    `json:"Year"`
 	Mileage int    `json:"Mileage"`
 	Image   string `json:"Image"`
+	Vin     string `json:"Vin"`
 }
 
 type AvailableDate struct {

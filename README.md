@@ -28,7 +28,7 @@ Request specification
         full description for chosen car,
         finds all related dates and prices
 
-    >[POST] /car/dates - add new available period. Merged with existing one if they intersect *
+    [POST] /car/dates - add new available period
     {
         CarId
         DayOfWeek
@@ -46,17 +46,31 @@ Request specification
 
 TODO:
 
-    Create table: history of rents
-
-    count total price for period
+    Расчет цены бронирования
     [GET] /total
-    ?
+    {
+        StartTime
+        EndTime
+    }
+    -> $ total float
 
-    add rent
+    Добавить бронирование -
+        пользователь видел расчет цены за бронирование,
+        делаем повторный расчет на сервере, на случай если цены изменились
+        если цена совпадает с TargetPrice, которую видел пользователь - бронируем
+        иначе отправляем 1xx ошибку, показываем что цена изменилась
     [POST] /rent
     {
-
+        RenterId
+        CarId
+        StartTime
+        EndTime
+        TargetPrice
     }
+    -> 1xx
+
+    Удаление
+
 
     show list of rents for user
     [GET] rent/{id}
@@ -82,3 +96,6 @@ TODO:
     delete car
     [DELETE] /car/{id} - cascade delete the car, prices and dates for it
 
+
+
+    Create table: history of rents
