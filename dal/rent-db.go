@@ -2,6 +2,7 @@ package dal
 
 import (
 	"database/sql"
+	"github.com/lib/pq"
 	"log"
 )
 
@@ -12,10 +13,12 @@ import (
 
 const (
 	SqlAvailableCars = `
--- SELECT "Car"."Id", "Model", "Year"
--- FROM "Car" RIGHT JOIN "Date"
--- ON "Car"."Id" = "Date"."CarId"
--- WHERE "Car"."OwnerId" <> $1;
+SELECT "Car"."Id", "Model", "Year"
+FROM "Car" RIGHT JOIN "Date"
+ON "Car"."Id" = "Date"."CarId"
+WHERE "Car"."OwnerId" <> $1;
+`
+	SqlAllCars = `
 SELECT "Id", "Model", "Year"
 from "Car" WHERE "OwnerId" <> $1
 `
@@ -62,7 +65,7 @@ func NewRentDb(db *sql.DB) *RentDb {
 }
 
 func (r *RentDb) AvailableCars(uid int) ([]CarShortDescription, error) {
-	rows, err := r.db.Query(SqlAvailableCars, uid)
+	rows, err := r.db.Query(SqlAllCars, uid)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -127,13 +130,16 @@ func (r *RentDb) FindCar(id int) (car CarFullDescription, err error) {
 	return car, nil
 }
 
-func (r *RentDb) CreateCar(car Car) error {
+func (r *RentDb) CreateCar(car Car) (bool, error) {
 	_, err := r.db.Exec(SqlCreateCar, car.OwnerId, car.Model, car.Year, car.Image, car.Mileage, car.Vin)
 	if err != nil {
+		if err.(*pq.Error).Code == "23505" {
+			return false, nil
+		}
 		log.Println(err)
-		return err
+		return false, err
 	}
-	return nil
+	return true, nil
 }
 
 func (r *RentDb) CreateRent(rent Rent) error {

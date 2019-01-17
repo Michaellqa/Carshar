@@ -4,8 +4,10 @@ import (
 	"Carshar/api/handlers/auth"
 	"Carshar/dal"
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type AddPriceHandler struct {
@@ -19,7 +21,18 @@ func NewAddPriceHandler(db dal.CarsharRepository) AddPriceHandler {
 func (h AddPriceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json charset=utf-8")
 
-	_, err := auth.UserToken(r)
+	id, ok := mux.Vars(r)["id"]
+	if !ok {
+		w.WriteHeader(400)
+		return
+	}
+	carId, err := strconv.ParseInt(id, 10, 0)
+	if err != nil {
+		w.WriteHeader(400)
+		return
+	}
+
+	_, err = auth.UserToken(r)
 	if err != nil {
 		w.WriteHeader(403)
 		return
@@ -32,7 +45,7 @@ func (h AddPriceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.db.CreatePrice(price.CarId, price)
+	err = h.db.CreatePrice(int(carId), price)
 	if err != nil {
 		w.WriteHeader(502)
 	}

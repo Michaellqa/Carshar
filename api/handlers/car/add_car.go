@@ -34,8 +34,11 @@ func (h AddCarHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	car.OwnerId = uid
 
-	err = h.db.CreateCar(car)
+	added, err := h.db.CreateCar(car)
 	if err != nil {
 		w.WriteHeader(502)
+	}
+	if !added {
+		w.WriteHeader(409)
 	}
 }

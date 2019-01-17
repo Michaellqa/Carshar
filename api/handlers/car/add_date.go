@@ -4,8 +4,10 @@ import (
 	"Carshar/api/handlers/auth"
 	"Carshar/dal"
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -20,7 +22,18 @@ func NewAddDateHandler(db dal.CarsharRepository) AddDateHandler {
 func (h AddDateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json charset=utf-8")
 
-	_, err := auth.UserToken(r)
+	id, ok := mux.Vars(r)["id"]
+	if !ok {
+		w.WriteHeader(400)
+		return
+	}
+	carId, err := strconv.ParseInt(id, 10, 0)
+	if err != nil {
+		w.WriteHeader(400)
+		return
+	}
+
+	_, err = auth.UserToken(r)
 	if err != nil {
 		w.WriteHeader(403)
 		return
@@ -33,7 +46,7 @@ func (h AddDateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.db.CreateDate(date.CarId, date)
+	err = h.db.CreateDate(int(carId), date)
 	if err != nil {
 		w.WriteHeader(502)
 	}

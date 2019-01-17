@@ -11,7 +11,7 @@ type CarsharRepository interface {
 	FindCar(cid int) (CarFullDescription, error)
 	CreateRent(r Rent) error
 
-	CreateCar(c Car) error
+	CreateCar(c Car) (bool, error)
 	CreateDate(carId int, d AvailableDate) error
 	CreatePrice(carId int, d PriceItem) error
 	//AddAvailableDate(date AvailableDate) error

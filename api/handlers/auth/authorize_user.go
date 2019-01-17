@@ -45,9 +45,4 @@ func (h AuthorizeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	id := strconv.FormatInt(int64(user.Id), 10)
 	w.Write([]byte(id))
-
-	//if err := json.NewEncoder(w).Encode(user); err != nil {
-	//	log.Println(err)
-	//	w.WriteHeader(502)
-	//}
 }
