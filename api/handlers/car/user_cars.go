@@ -4,35 +4,39 @@ import (
 	"Carshar/dal"
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"strconv"
 )
 
-type CarListHandler struct {
+type UserCarsHandler struct {
 	db dal.CarsharRepository
 }
 
-func NewCarListHandler(db dal.CarsharRepository) CarListHandler {
-	return CarListHandler{db: db}
+func NewUserCarsHandler(db dal.CarsharRepository) UserCarsHandler {
+	return UserCarsHandler{db: db}
 }
 
-func (h CarListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h UserCarsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json charset=utf-8")
 
-	idStr := r.Header.Get("Authorization")
-	uid, err := strconv.ParseInt(idStr, 10, 0)
-	if err != nil {
-		log.Println(err)
+	id, ok := mux.Vars(r)["id"]
+	if !ok {
 		w.WriteHeader(400)
 		return
 	}
 
-	cars, err := h.db.AvailableCars(int(uid))
+	carId, err := strconv.ParseInt(id, 10, 0)
+	if err != nil {
+		w.WriteHeader(400)
+		return
+	}
+
+	cars, err := h.db.UserCars(int(carId))
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(502)
-		return
+		w.WriteHeader(400)
 	}
 
 	fmt.Println("car list", r.URL, cars)

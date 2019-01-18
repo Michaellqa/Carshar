@@ -13,8 +13,11 @@ func NewMux(
 	addCarHandler car.AddCarHandler,
 	carListHandler car.CarListHandler,
 	findCarHandler car.FindCarHandler,
+	userCarsHandler car.UserCarsHandler,
 	addDateHandler car.AddDateHandler,
 	addPriceHandler car.AddPriceHandler,
+	dateHandler car.DatesHandler,
+	priceHandler car.PricesHandler,
 ) http.Handler {
 	mx := mux.NewRouter()
 
@@ -24,17 +27,13 @@ func NewMux(
 	mx.Handle("/cars", addCarHandler).Methods(http.MethodPost)
 	mx.Handle("/cars", carListHandler).Methods(http.MethodGet)
 	mx.Handle("/cars/{id}", findCarHandler).Methods(http.MethodGet)
+	mx.Handle("/users/{id}/cars", userCarsHandler).Methods(http.MethodGet)
 
 	mx.Handle("/cars/{id}/dates", addDateHandler).Methods(http.MethodPost)
 	mx.Handle("/cars/{id}/prices", addPriceHandler).Methods(http.MethodPost)
 
+	mx.Handle("/cars/{id}/dates", dateHandler).Methods(http.MethodGet)
+	mx.Handle("/cars/{id}/prices", priceHandler).Methods(http.MethodGet)
+
 	return mx
 }
-
-//type Auth struct {
-//
-//}
-//
-//func (a Auth) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-//
-//}

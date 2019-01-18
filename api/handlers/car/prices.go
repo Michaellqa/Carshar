@@ -11,15 +11,15 @@ import (
 	"strconv"
 )
 
-type AddDateHandler struct {
+type PricesHandler struct {
 	db dal.CarsharRepository
 }
 
-func NewAddDateHandler(db dal.CarsharRepository) AddDateHandler {
-	return AddDateHandler{db: db}
+func NewPricesHandler(db dal.CarsharRepository) PricesHandler {
+	return PricesHandler{db: db}
 }
 
-func (h AddDateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h PricesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json charset=utf-8")
 
 	id, ok := mux.Vars(r)["id"]
@@ -39,25 +39,17 @@ func (h AddDateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//b, err := ioutil.ReadAll(r.Body)
-	//if err != nil {
-	//	log.Println(err)
-	//	return
-	//}
-	//
-	//fmt.Println(string(b))
-
-	var date dal.AvailableDate
-	if err := json.NewDecoder(r.Body).Decode(&date); err != nil {
+	cars, err := h.db.CarPrices(int(carId))
+	if err != nil {
 		log.Println(err)
-		w.WriteHeader(400)
+		w.WriteHeader(502)
 		return
 	}
 
-	fmt.Println(carId, date)
+	fmt.Println("car list", r.URL, cars)
 
-	err = h.db.CreateDate(int(carId), date)
-	if err != nil {
+	if err := json.NewEncoder(w).Encode(cars); err != nil {
+		log.Println(err)
 		w.WriteHeader(502)
 	}
 }

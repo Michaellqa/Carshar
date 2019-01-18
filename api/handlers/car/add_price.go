@@ -4,6 +4,7 @@ import (
 	"Carshar/api/handlers/auth"
 	"Carshar/dal"
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -44,6 +45,7 @@ func (h AddPriceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(400)
 		return
 	}
+	fmt.Println(price)
 
 	err = h.db.CreatePrice(int(carId), price)
 	if err != nil {

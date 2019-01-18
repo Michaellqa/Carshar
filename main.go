@@ -48,9 +48,13 @@ func provideServer(port int, done chan struct{}) *api.Server {
 	addCarHandler := car.NewAddCarHandler(carDb)
 	carListHandler := car.NewCarListHandler(carDb)
 	findCarHandler := car.NewFindCarHandler(carDb)
+	userCarsHandler := car.NewUserCarsHandler(carDb)
 
 	addDateHandler := car.NewAddDateHandler(carDb)
 	addPriceHandler := car.NewAddPriceHandler(carDb)
+
+	datesHandler := car.NewDatesHandler(carDb)
+	pricesHandler := car.NewPricesHandler(carDb)
 
 	mx := api.NewMux(
 		userHandler,
@@ -58,8 +62,11 @@ func provideServer(port int, done chan struct{}) *api.Server {
 		addCarHandler,
 		carListHandler,
 		findCarHandler,
+		userCarsHandler,
 		addDateHandler,
 		addPriceHandler,
+		datesHandler,
+		pricesHandler,
 	)
 
 	return api.NewServer(port, mx, done)

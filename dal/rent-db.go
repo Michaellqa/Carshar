@@ -22,6 +22,10 @@ WHERE "Car"."OwnerId" <> $1;
 SELECT "Id", "Model", "Year"
 from "Car" WHERE "OwnerId" <> $1
 `
+	SqlUserCars = `
+SELECT "Id", "Model"
+from "Car" WHERE "OwnerId" = $1
+`
 	SqlFindCar = `
 SELECT "Id", "Model", "Year", "Image", "Mileage" FROM "Car"
 WHERE "Id" = $1;
@@ -31,7 +35,7 @@ SELECT "TimeUnit", "Price" FROM "Price"
 WHERE "CarId" = $1;
 `
 	SqlCarDates = `
-SELECT "DayOfWeek", "TimeStart", "TimeEnd" FROM "Date"
+SELECT "StartTime", "EndTime" FROM "Date"
 WHERE "CarId" = $1;
 `
 	SqlCreateRent = `
@@ -51,8 +55,8 @@ INSERT INTO "Price" ("CarId", "TimeUnit", "Price") VALUES
 ($1, $2, $3)
 `
 	SqlCreateDate = `
-INSERT INTO "Date" ("CarId", "DayOfWeek", "StartTime", "EndTime") VALUES 
-($1, $2, $3, $4)
+INSERT INTO "Date" ("CarId", "StartTime", "EndTime") VALUES 
+($1, $2, $3)
 `
 )
 
@@ -87,6 +91,29 @@ func (r *RentDb) AvailableCars(uid int) ([]CarShortDescription, error) {
 	return cars, err
 }
 
+func (r *RentDb) UserCars(uid int) ([]CarRentingStatus, error) {
+	rows, err := r.db.Query(SqlUserCars, uid)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	var (
+		car  CarRentingStatus
+		cars []CarRentingStatus
+	)
+
+	for rows.Next() {
+		err := rows.Scan(&car.Id, &car.Model)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		cars = append(cars, car)
+	}
+
+	return cars, err
+}
+
 func (r *RentDb) FindCar(id int) (car CarFullDescription, err error) {
 
 	row := r.db.QueryRow(SqlFindCar, id)
@@ -104,7 +131,7 @@ func (r *RentDb) FindCar(id int) (car CarFullDescription, err error) {
 	}
 	for rows.Next() {
 		date := AvailableDate{}
-		err := rows.Scan(&date.DayOfWeek, &date.StartTime, &date.EndTime)
+		err := rows.Scan(&date.StartTime, &date.EndTime)
 		if err != nil {
 			log.Println(err)
 			continue
@@ -161,12 +188,52 @@ func (r *RentDb) CreatePrice(carId int, p PriceItem) error {
 }
 
 func (r *RentDb) CreateDate(carId int, d AvailableDate) error {
-	_, err := r.db.Exec(SqlCreateDate, carId, d.DayOfWeek, d.StartTime, d.EndTime)
+	_, err := r.db.Exec(SqlCreateDate, carId, d.StartTime, d.EndTime)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 	return nil
+}
+
+func (r *RentDb) CarDates(carId int) ([]AvailableDate, error) {
+	rows, err := r.db.Query(SqlCarDates, carId)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	var (
+		date  AvailableDate
+		dates []AvailableDate
+	)
+	for rows.Next() {
+		if err := rows.Scan(&date.StartTime, &date.EndTime); err != nil {
+			log.Println(err)
+			continue
+		}
+		dates = append(dates, date)
+	}
+	return dates, nil
+}
+
+func (r *RentDb) CarPrices(carId int) ([]PriceItem, error) {
+	rows, err := r.db.Query(SqlCarPrices, carId)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	var (
+		price  PriceItem
+		prices []PriceItem
+	)
+	for rows.Next() {
+		if err := rows.Scan(&price.TimeUnit, &price.Price); err != nil {
+			log.Println(err)
+			continue
+		}
+		prices = append(prices, price)
+	}
+	return prices, nil
 }
 
 func (r *RentDb) RentHistory(uid int) ([]Rent, error) {
