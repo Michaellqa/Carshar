@@ -46,3 +46,11 @@ func (h UserCarsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(502)
 	}
 }
+
+func (h UserCarsHandler) anyCar() {
+
+}
+
+func (h UserCarsHandler) carsForDate() {
+
+}

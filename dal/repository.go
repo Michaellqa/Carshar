@@ -1,5 +1,7 @@
 package dal
 
+import "time"
+
 type AuthRepository interface {
 	CreateUser(user User) (bool, error)
 	//returned bool indicates if user was found
@@ -8,6 +10,7 @@ type AuthRepository interface {
 
 type CarsharRepository interface {
 	AvailableCars(uid int) ([]CarShortDescription, error)
+	AvailableCarsForDate(uid int, start, end time.Time) ([]CarShortDescription, error)
 	FindCar(cid int) (CarFullDescription, error)
 	UserCars(uid int) ([]CarRentingStatus, error)
 	CreateRent(r Rent) error

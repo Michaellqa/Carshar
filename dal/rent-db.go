@@ -2,8 +2,10 @@ package dal
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/lib/pq"
 	"log"
+	"time"
 )
 
 /*
@@ -18,9 +20,16 @@ FROM "Car" RIGHT JOIN "Date"
 ON "Car"."Id" = "Date"."CarId"
 WHERE "Car"."OwnerId" <> $1;
 `
-	SqlAllCars = `
+	SqlAllAvailableCars = `
 SELECT "Id", "Model", "Year"
 from "Car" WHERE "OwnerId" <> $1
+`
+	SqlAvailableCarsForDate = `
+SELECT "Id", "Model", "Year"
+from "Car" INNER JOIN "Date" ON "Car"."Id" = "CarId"
+WHERE "OwnerId" <> $1 
+AND ($2 BETWEEN "StartTime" AND "EndTime")
+AND ($3 BETWEEN "StartTime" AND "EndTime");
 `
 	SqlUserCars = `
 SELECT "Id", "Model"
@@ -69,7 +78,7 @@ func NewRentDb(db *sql.DB) *RentDb {
 }
 
 func (r *RentDb) AvailableCars(uid int) ([]CarShortDescription, error) {
-	rows, err := r.db.Query(SqlAllCars, uid)
+	rows, err := r.db.Query(SqlAllAvailableCars, uid)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -78,7 +87,29 @@ func (r *RentDb) AvailableCars(uid int) ([]CarShortDescription, error) {
 		car  CarShortDescription
 		cars []CarShortDescription
 	)
+	for rows.Next() {
+		err := rows.Scan(&car.Id, &car.Model, &car.Year)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		cars = append(cars, car)
+	}
 
+	return cars, err
+}
+
+func (r *RentDb) AvailableCarsForDate(uid int, start, end time.Time) ([]CarShortDescription, error) {
+	fmt.Println("searching: ", uid, start, end)
+	rows, err := r.db.Query(SqlAvailableCarsForDate, uid, start, end)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	var (
+		car  CarShortDescription
+		cars []CarShortDescription
+	)
 	for rows.Next() {
 		err := rows.Scan(&car.Id, &car.Model, &car.Year)
 		if err != nil {
@@ -170,6 +201,9 @@ func (r *RentDb) CreateCar(car Car) (bool, error) {
 }
 
 func (r *RentDb) CreateRent(rent Rent) error {
+
+	//TODO use procedure
+
 	_, err := r.db.Exec(SqlCreateRent, rent.CarId, rent.RenterId, rent.StartTime, rent.EndTime, rent.Total)
 	if err != nil {
 		log.Println(err)

@@ -4,6 +4,7 @@ import (
 	"Carshar/api"
 	"Carshar/api/handlers/auth"
 	"Carshar/api/handlers/car"
+	"Carshar/api/handlers/renting"
 	"Carshar/dal"
 	"database/sql"
 	"fmt"
@@ -56,6 +57,9 @@ func provideServer(port int, done chan struct{}) *api.Server {
 	datesHandler := car.NewDatesHandler(carDb)
 	pricesHandler := car.NewPricesHandler(carDb)
 
+	totalHandler := renting.NewTotalHandler(carDb)
+	rentHandler := renting.NewRentHandler(carDb)
+
 	mx := api.NewMux(
 		userHandler,
 		authHandler,
@@ -67,6 +71,8 @@ func provideServer(port int, done chan struct{}) *api.Server {
 		addPriceHandler,
 		datesHandler,
 		pricesHandler,
+		totalHandler,
+		rentHandler,
 	)
 
 	return api.NewServer(port, mx, done)

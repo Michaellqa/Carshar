@@ -3,6 +3,7 @@ package api
 import (
 	"Carshar/api/handlers/auth"
 	"Carshar/api/handlers/car"
+	"Carshar/api/handlers/renting"
 	"github.com/gorilla/mux"
 	"net/http"
 )
@@ -10,6 +11,7 @@ import (
 func NewMux(
 	createUserHandler auth.CreateUserHandler,
 	authHandler auth.AuthorizeHandler,
+
 	addCarHandler car.AddCarHandler,
 	carListHandler car.CarListHandler,
 	findCarHandler car.FindCarHandler,
@@ -18,6 +20,9 @@ func NewMux(
 	addPriceHandler car.AddPriceHandler,
 	dateHandler car.DatesHandler,
 	priceHandler car.PricesHandler,
+
+	totalHandler renting.TotalPriceHandler,
+	rentHandler renting.RentHandler,
 ) http.Handler {
 	mx := mux.NewRouter()
 
@@ -34,6 +39,9 @@ func NewMux(
 
 	mx.Handle("/cars/{id}/dates", dateHandler).Methods(http.MethodGet)
 	mx.Handle("/cars/{id}/prices", priceHandler).Methods(http.MethodGet)
+
+	mx.Handle("/cars/{id}/{start-date}/{end-date}/total", totalHandler).Methods(http.MethodGet)
+	mx.Handle("/cars/{id}/rent", rentHandler).Methods(http.MethodPost)
 
 	return mx
 }

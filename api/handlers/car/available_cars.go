@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 type CarListHandler struct {
@@ -28,7 +29,17 @@ func (h CarListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cars, err := h.db.AvailableCars(int(uid))
+	cars := make([]dal.CarShortDescription, 0)
+
+	start, end, ok := dateParams(r)
+	if ok {
+		log.Println("AvailableCarsForDate")
+		cars, err = h.db.AvailableCarsForDate(int(uid), start, end)
+	} else {
+		log.Println("AvailableCars")
+		cars, err = h.db.AvailableCars(int(uid))
+	}
+
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(502)
@@ -41,4 +52,29 @@ func (h CarListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		w.WriteHeader(502)
 	}
+}
+
+func dateParams(r *http.Request) (start, end time.Time, ok bool) {
+	s, ok := r.URL.Query()["start"]
+	if !ok {
+		return time.Time{}, time.Time{}, false
+	}
+	e, ok := r.URL.Query()["end"]
+	if !ok {
+		return time.Time{}, time.Time{}, false
+	}
+	if len(s) == 0 || len(e) == 0 {
+		return time.Time{}, time.Time{}, false
+	}
+	start, err := time.Parse("2006-01-02T15:04Z", s[0])
+	if err != nil {
+		log.Println(err)
+		return time.Time{}, time.Time{}, false
+	}
+	end, err = time.Parse("2006-01-02T15:04Z", e[0])
+	if err != nil {
+		log.Println(err)
+		return time.Time{}, time.Time{}, false
+	}
+	return start, end, true
 }
