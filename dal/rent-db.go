@@ -14,19 +14,13 @@ import (
 */
 
 const (
-	SqlAvailableCars = `
-SELECT "Car"."Id", "Model", "Year"
-FROM "Car" RIGHT JOIN "Date"
-ON "Car"."Id" = "Date"."CarId"
-WHERE "Car"."OwnerId" <> $1;
-`
 	SqlAllAvailableCars = `
 SELECT "Id", "Model", "Year"
 from "Car" WHERE "OwnerId" <> $1
 `
 	SqlAvailableCarsForDate = `
 SELECT "Id", "Model", "Year"
-from "Car" INNER JOIN "Date" ON "Car"."Id" = "CarId"
+FROM "Car" INNER JOIN "Date" ON "Car"."Id" = "CarId"
 WHERE "OwnerId" <> $1 
 AND ($2 BETWEEN "StartTime" AND "EndTime")
 AND ($3 BETWEEN "StartTime" AND "EndTime");
@@ -34,6 +28,11 @@ AND ($3 BETWEEN "StartTime" AND "EndTime");
 	SqlUserCars = `
 SELECT "Id", "Model"
 from "Car" WHERE "OwnerId" = $1
+`
+	SqlUserRentedCars = `
+SELECT "Model" FROM "Car" INNER JOIN "Rent"
+ON "Rent"."CarId" = "Car"."Id"
+WHERE "Rent"."RenterId" = $1;
 `
 	SqlFindCar = `
 SELECT "Id", "Model", "Year", "Image", "Mileage" FROM "Car"
@@ -48,11 +47,11 @@ SELECT "StartTime", "EndTime" FROM "Date"
 WHERE "CarId" = $1;
 `
 	SqlCreateRent = `
-INSERT INTO "Rent" ("CarId", "RenterId", "TimeStart", "TimeEnd", "TotalPrice") VALUES 
+INSERT INTO "Rent" ("CarId", "RenterId", "StartDate", "EndDate", "TotalPrice") VALUES 
 ($1, $2, $3, $4, $5);
 `
 	SqlRentHistory = `
-SELECT "CarId", "TimeStart", "TimeEnd", "TotalPrice" FROM "Rent"
+SELECT "CarId", "StartTime", "EndTime", "TotalPrice" FROM "Rent"
 WHERE "UserId" = $1;
 `
 	SqlCreateCar = `
@@ -124,6 +123,29 @@ func (r *RentDb) AvailableCarsForDate(uid int, start, end time.Time) ([]CarShort
 
 func (r *RentDb) UserCars(uid int) ([]CarRentingStatus, error) {
 	rows, err := r.db.Query(SqlUserCars, uid)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	var (
+		car  CarRentingStatus
+		cars []CarRentingStatus
+	)
+
+	for rows.Next() {
+		err := rows.Scan(&car.Id, &car.Model)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		cars = append(cars, car)
+	}
+
+	return cars, err
+}
+
+func (r *RentDb) UserRentedCars(uid int) ([]CarRentingStatus, error) {
+	rows, err := r.db.Query(SqlUserRentedCars, uid)
 	if err != nil {
 		log.Println(err)
 		return nil, err

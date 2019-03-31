@@ -2,6 +2,7 @@ package main
 
 import (
 	"Carshar/api"
+	"Carshar/api/handlers/analytics"
 	"Carshar/api/handlers/auth"
 	"Carshar/api/handlers/car"
 	"Carshar/api/handlers/renting"
@@ -42,6 +43,7 @@ func provideServer(port int, done chan struct{}) *api.Server {
 
 	authDb := dal.NewAuthDb(pDb)
 	carDb := dal.NewRentDb(pDb)
+	analyticsDb := dal.NewAnalyticsDb(pDb)
 
 	authHandler := auth.NewAuthHandler(authDb)
 	userHandler := auth.NewCreateUserHandler(authDb)
@@ -50,6 +52,7 @@ func provideServer(port int, done chan struct{}) *api.Server {
 	carListHandler := car.NewCarListHandler(carDb)
 	findCarHandler := car.NewFindCarHandler(carDb)
 	userCarsHandler := car.NewUserCarsHandler(carDb)
+	userRentedCarsHandler := car.NewUserRentedCarsHandler(carDb)
 
 	addDateHandler := car.NewAddDateHandler(carDb)
 	addPriceHandler := car.NewAddPriceHandler(carDb)
@@ -60,6 +63,8 @@ func provideServer(port int, done chan struct{}) *api.Server {
 	totalHandler := renting.NewTotalHandler(carDb)
 	rentHandler := renting.NewRentHandler(carDb)
 
+	analyticsHandler := analytics.NewAnalyticsHandler(analyticsDb)
+
 	mx := api.NewMux(
 		userHandler,
 		authHandler,
@@ -67,12 +72,14 @@ func provideServer(port int, done chan struct{}) *api.Server {
 		carListHandler,
 		findCarHandler,
 		userCarsHandler,
+		userRentedCarsHandler,
 		addDateHandler,
 		addPriceHandler,
 		datesHandler,
 		pricesHandler,
 		totalHandler,
 		rentHandler,
+		analyticsHandler,
 	)
 
 	return api.NewServer(port, mx, done)

@@ -13,6 +13,7 @@ type CarsharRepository interface {
 	AvailableCarsForDate(uid int, start, end time.Time) ([]CarShortDescription, error)
 	FindCar(cid int) (CarFullDescription, error)
 	UserCars(uid int) ([]CarRentingStatus, error)
+	UserRentedCars(uid int) ([]CarRentingStatus, error)
 	CreateRent(r Rent) error
 
 	CreateCar(c Car) (bool, error)

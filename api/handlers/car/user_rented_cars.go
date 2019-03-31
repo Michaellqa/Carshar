@@ -10,15 +10,15 @@ import (
 	"strconv"
 )
 
-type UserCarsHandler struct {
+type UserRentedCarsHandler struct {
 	db dal.CarsharRepository
 }
 
-func NewUserCarsHandler(db dal.CarsharRepository) UserCarsHandler {
-	return UserCarsHandler{db: db}
+func NewUserRentedCarsHandler(db dal.CarsharRepository) UserRentedCarsHandler {
+	return UserRentedCarsHandler{db: db}
 }
 
-func (h UserCarsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h UserRentedCarsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json charset=utf-8")
 
 	id, ok := mux.Vars(r)["id"]
@@ -33,7 +33,7 @@ func (h UserCarsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cars, err := h.db.UserCars(int(uid))
+	cars, err := h.db.UserRentedCars(int(uid))
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(400)
