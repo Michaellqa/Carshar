@@ -27,6 +27,8 @@ func (h CarListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	//	return
 	//}
 
+	log.Println(r.RequestURI)
+
 	idStr := r.Header.Get("Authorization")
 	uid, err := strconv.ParseInt(idStr, 10, 0)
 	if err != nil {
@@ -49,6 +51,11 @@ func (h CarListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(502)
+		return
+	}
+
+	if len(cars) == 0 {
+		w.Write([]byte("[]"))
 		return
 	}
 

@@ -16,7 +16,7 @@ import (
 
 const (
 	postgres     = "postgres"
-	pgConnection = "postgres://localhost/CarSharing?sslmode=disable"
+	pgConnection = "postgres://localhost/Carshar?sslmode=disable"
 )
 
 func main() {
