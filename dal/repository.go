@@ -9,7 +9,6 @@ type AuthRepository interface {
 }
 
 type CarsharRepository interface {
-	AvailableCars(uid int) ([]CarShortDescription, error)
 	AvailableCarsForDate(uid int, start, end time.Time) ([]CarShortDescription, error)
 	FindCar(cid int) (CarFullDescription, error)
 	UserCars(uid int) ([]CarRentingStatus, error)
@@ -22,9 +21,4 @@ type CarsharRepository interface {
 
 	CarDates(carId int) ([]AvailableDate, error)
 	CarPrices(carId int) ([]PriceItem, error)
-
-	//AddAvailableDate(date AvailableDate) error
-	//RemoveDate(did int) error
-
-	//RentHistory(uid int) (History, error)
 }

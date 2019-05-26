@@ -1,0 +1,15 @@
+-- +goose Up
+
+ALTER TABLE "Rent" ADD COLUMN "StartTimeT" TIMESTAMP with time ZONE NULL;
+ALTER TABLE "Rent" ADD COLUMN "EndTimeT" TIMESTAMP with time ZONE NULL;
+
+UPDATE "Rent" Set "StartTimeT" = "StartTime"::TIMESTAMP with time ZONE;
+UPDATE "Rent" Set "EndTimeT" = "EndTime"::TIMESTAMP with time ZONE;
+
+ALTER TABLE "Rent" ALTER COLUMN "StartTime" TYPE TIMESTAMP WITH TIME ZONE USING "StartTimeT";
+ALTER TABLE "Rent" ALTER COLUMN "EndTime" TYPE TIMESTAMP WITH TIME ZONE USING "EndTimeT";
+
+ALTER TABLE "Rent" DROP COLUMN "StartTimeT";
+ALTER TABLE "Rent" DROP COLUMN "EndTimeT";
+
+-- +goose Down

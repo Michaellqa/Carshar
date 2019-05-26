@@ -58,13 +58,19 @@ type CarFullDescription struct {
 }
 
 type CarShortDescription struct {
-	Id    int    `json:"id"`
-	Model string `json:"model"`
-	Year  int    `json:"year"`
+	Id          int        `json:"id"`
+	Model       string     `json:"model"`
+	Year        int        `json:"year"`
+	Coordinates Coordinate `json:"coordinates"`
 }
 
 type CarRentingStatus struct {
 	Id     int    `json:"id"`
 	Model  string `json:"model"`
 	Status int    `json:"status"`
+}
+
+type Coordinate struct {
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
 }

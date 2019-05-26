@@ -3,7 +3,6 @@ package car
 import (
 	"Carshar/dal"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -21,6 +20,13 @@ func NewCarListHandler(db dal.CarsharRepository) CarListHandler {
 func (h CarListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json charset=utf-8")
 
+	//test
+	//if err := json.NewEncoder(w).Encode(dummy); err != nil {
+	//	log.Println(err)
+	//	w.WriteHeader(502)
+	//	return
+	//}
+
 	idStr := r.Header.Get("Authorization")
 	uid, err := strconv.ParseInt(idStr, 10, 0)
 	if err != nil {
@@ -32,13 +38,13 @@ func (h CarListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	cars := make([]dal.CarShortDescription, 0)
 
 	start, end, ok := dateParams(r)
-	if ok {
-		log.Println("AvailableCarsForDate")
-		cars, err = h.db.AvailableCarsForDate(int(uid), start, end)
-	} else {
-		log.Println("AvailableCars")
-		cars, err = h.db.AvailableCars(int(uid))
+	if !ok {
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
+
+	log.Println("AvailableCarsForDate")
+	cars, err = h.db.AvailableCarsForDate(int(uid), start, end)
 
 	if err != nil {
 		log.Println(err)
@@ -46,8 +52,7 @@ func (h CarListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("car list", r.URL, cars)
-
+	//fmt.Println("car list", r.URL, cars)
 	if err := json.NewEncoder(w).Encode(cars); err != nil {
 		log.Println(err)
 		w.WriteHeader(502)
@@ -78,3 +83,26 @@ func dateParams(r *http.Request) (start, end time.Time, ok bool) {
 	}
 	return start, end, true
 }
+
+//var dummy = []dal.CarShortDescription{
+//	{
+//		Id:          1,
+//		Model:       "Tesla",
+//		Coordinates: dal.Coordinate{Latitude: 55.2, Longitude: 37.0},
+//	},
+//	{
+//		Id:          2,
+//		Model:       "BMW",
+//		Coordinates: dal.Coordinate{Latitude: 55.22, Longitude: 37.066},
+//	},
+//	{
+//		Id:          3,
+//		Model:       "Amarok",
+//		Coordinates: dal.Coordinate{Latitude: 55.21, Longitude: 37.022},
+//	},
+//	{
+//		Id:          4,
+//		Model:       "Jaguar",
+//		Coordinates: dal.Coordinate{Latitude: 55.203, Longitude: 37.08},
+//	},
+//}

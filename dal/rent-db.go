@@ -15,11 +15,11 @@ import (
 
 const (
 	SqlAllAvailableCars = `
-SELECT "Id", "Model", "Year"
+SELECT "Id", "Model", "Year", "latitude", "longitude"
 from "Car" WHERE "OwnerId" <> $1
 `
 	SqlAvailableCarsForDate = `
-SELECT "Id", "Model", "Year"
+SELECT "Id", "Model", "Year", "latitude", "longitude"
 FROM "Car" INNER JOIN "Date" ON "Car"."Id" = "CarId"
 WHERE "OwnerId" <> $1 
 AND ($2 BETWEEN "StartTime" AND "EndTime")
@@ -86,11 +86,18 @@ func (r *RentDb) AvailableCars(uid int) ([]CarShortDescription, error) {
 		car  CarShortDescription
 		cars []CarShortDescription
 	)
+
+	var lat, long sql.NullFloat64
+
 	for rows.Next() {
-		err := rows.Scan(&car.Id, &car.Model, &car.Year)
+		err := rows.Scan(&car.Id, &car.Model, &car.Year, &lat, &long)
 		if err != nil {
 			log.Println(err)
 			continue
+		}
+		if lat.Valid && long.Valid {
+			car.Coordinates.Latitude = lat.Float64
+			car.Coordinates.Longitude = long.Float64
 		}
 		cars = append(cars, car)
 	}
@@ -99,7 +106,8 @@ func (r *RentDb) AvailableCars(uid int) ([]CarShortDescription, error) {
 }
 
 func (r *RentDb) AvailableCarsForDate(uid int, start, end time.Time) ([]CarShortDescription, error) {
-	fmt.Println("searching: ", uid, start, end)
+	fmt.Println("AvailableCarsForDate: ", uid, start, end)
+
 	rows, err := r.db.Query(SqlAvailableCarsForDate, uid, start, end)
 	if err != nil {
 		log.Println(err)
@@ -109,11 +117,18 @@ func (r *RentDb) AvailableCarsForDate(uid int, start, end time.Time) ([]CarShort
 		car  CarShortDescription
 		cars []CarShortDescription
 	)
+
+	var lat, long sql.NullFloat64
+
 	for rows.Next() {
-		err := rows.Scan(&car.Id, &car.Model, &car.Year)
+		err := rows.Scan(&car.Id, &car.Model, &car.Year, &lat, &long)
 		if err != nil {
 			log.Println(err)
 			continue
+		}
+		if lat.Valid && long.Valid {
+			car.Coordinates.Latitude = lat.Float64
+			car.Coordinates.Longitude = long.Float64
 		}
 		cars = append(cars, car)
 	}
