@@ -14,16 +14,16 @@ import (
 */
 
 const (
-	SqlAllAvailableCars = `
-SELECT "Id", "Model", "Year", "latitude", "longitude"
-from "Car" WHERE "OwnerId" <> $1
-`
 	SqlAvailableCarsForDate = `
-SELECT "Id", "Model", "Year", "latitude", "longitude"
-FROM "Car" INNER JOIN "Date" ON "Car"."Id" = "CarId"
-WHERE "OwnerId" <> $1 
-AND ($2 BETWEEN "StartTime" AND "EndTime")
-AND ($3 BETWEEN "StartTime" AND "EndTime");
+SELECT ac."Id", "Model", "Year", "Latitude", "Longitude"
+FROM "Location" RIGHT JOIN (
+	SELECT "Car"."Id", "Model", "Year"
+	FROM "Car" INNER JOIN "Availability" ON "Car"."Id" = "CarId"
+  WHERE "OwnerId" <> $1
+    AND ($2 BETWEEN "TimeStart" AND "TimeEnd")
+    AND ($3 BETWEEN "TimeStart" AND "TimeEnd")
+) as ac ON ac."Id" = "Location"."CarId";
+;
 `
 	SqlUserCars = `
 SELECT "Id", "Model"
@@ -74,35 +74,6 @@ type RentDb struct {
 
 func NewRentDb(db *sql.DB) *RentDb {
 	return &RentDb{db: db}
-}
-
-func (r *RentDb) AvailableCars(uid int) ([]CarShortDescription, error) {
-	rows, err := r.db.Query(SqlAllAvailableCars, uid)
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
-	var (
-		car  CarShortDescription
-		cars []CarShortDescription
-	)
-
-	var lat, long sql.NullFloat64
-
-	for rows.Next() {
-		err := rows.Scan(&car.Id, &car.Model, &car.Year, &lat, &long)
-		if err != nil {
-			log.Println(err)
-			continue
-		}
-		if lat.Valid && long.Valid {
-			car.Coordinates.Latitude = lat.Float64
-			car.Coordinates.Longitude = long.Float64
-		}
-		cars = append(cars, car)
-	}
-
-	return cars, err
 }
 
 func (r *RentDb) AvailableCarsForDate(uid int, start, end time.Time) ([]CarShortDescription, error) {

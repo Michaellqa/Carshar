@@ -4,7 +4,7 @@ CREATE TABLE "User" (
 	"Name" VARCHAR(100) NOT NULL,
 	"PhoneNumber" VARCHAR(20) NOT NULL UNIQUE,
 	"Password" VARCHAR(50) NOT NULL,
-	"BirthDate" VARCHAR(30) NOT NULL,
+	"BirthDate" DATE NOT NULL,
 	"CreditAmount" DECIMAL not NULL default 0
 );
 
@@ -12,7 +12,7 @@ CREATE TABLE "Car" (
 	"Id" SERIAL PRIMARY KEY,
 	"OwnerId" INTEGER NOT NULL,
 	"Model" TEXT NOT NULL,
-	"Description" TEXT NOT NULL,
+	"Description" TEXT,
 	"Year" INTEGER NOT NULL,
 	"Mileage" INTEGER NOT NULL default 0,
 	"Vin" VARCHAR(17) NOT NULL UNIQUE,
@@ -29,24 +29,26 @@ CREATE TABLE "Price" (
 );
 
 CREATE TABLE "Availability" (
-  "Id" INTEGER PRIMARY KEY,
+  "Id" SERIAL PRIMARY KEY,
 	"CarId" INTEGER,
-	"TimeStart" VARCHAR(30),
-	"TimeEnd" VARCHAR(30)
+	"TimeStart" TIMESTAMP WITH TIME ZONE NOT NULL,
+	"TimeEnd" TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
 CREATE TABLE "Reservation" (
 	"Id" SERIAL PRIMARY KEY,
 	"RenterId" INTEGER,
 	"CarId" INTEGER,
-	"StartDateTime" VARCHAR(30),
-	"EndDateTime" VARCHAR(30),
-	"TotalPrice" DECIMAL,
-	"TransactionId" INT
+	"StartDate" TIMESTAMP WITH TIME ZONE NOT NULL,
+	"EstimatedEndDate" TIMESTAMP WITH TIME ZONE NOT NULL,
+	"EndDate" TIMESTAMP WITH TIME ZONE,
+	"CalculatedTotalPrice" DECIMAL,
+	"PaymentId" INT
 );
 
-CREATE TABLE "Transaction" (
+CREATE TABLE "Payment" (
   "Id" SERIAL PRIMARY Key,
+  "Amount" DECIMAL NOT NULL,
   "Timestamp" TIMESTAMP WITH TIME ZONE,
   "SenderId" INTEGER,
   "ReceiverId" INTEGER
@@ -54,6 +56,7 @@ CREATE TABLE "Transaction" (
 
 CREATE TABLE "Location" (
   "Id" SERIAL PRIMARY KEY,
+  "CarId" INTEGER NOT NULL,
   "City" VARCHAR(40),
   "Latitude" FLOAT,
   "Longitude" FLOAT
@@ -72,12 +75,12 @@ ALTER TABLE "Reservation"
 ADD CONSTRAINT fk_rent_user FOREIGN KEY ("RenterId") REFERENCES "User" ("Id");
 
 ALTER TABLE "Reservation"
-ADD CONSTRAINT fk_rent_transaction FOREIGN KEY ("TransactionId") REFERENCES "Location" ("Id");
+ADD CONSTRAINT fk_rent_transaction FOREIGN KEY ("PaymentId") REFERENCES "Payment" ("Id");
 
-ALTER TABLE "Transaction"
+ALTER TABLE "Payment"
 ADD CONSTRAINT fk_trans_sender FOREIGN KEY ("SenderId") REFERENCES "User" ("Id");
 
-ALTER TABLE "Transaction"
+ALTER TABLE "Payment"
 ADD CONSTRAINT fk_trans_receiver FOREIGN KEY ("ReceiverId") REFERENCES "User" ("Id");
 
 ALTER TABLE "Price"
@@ -85,6 +88,9 @@ ADD CONSTRAINT fk_price_car FOREIGN KEY ("CarId") REFERENCES "Car" ("Id");
 
 ALTER TABLE "Availability"
 ADD CONSTRAINT fk_date_car FOREIGN KEY ("CarId") REFERENCES "Car" ("Id");
+
+ALTER TABLE "Location"
+ADD CONSTRAINT fk_location_car FOREIGN KEY ("CarId") REFERENCES "Car" ("Id");
 
 
 -- +goose StatementBegin
@@ -108,6 +114,22 @@ $func$
 
 CREATE TRIGGER "check_dates_of_rent" BEFORE INSERT ON "Reservation"
 FOR EACH ROW EXECUTE PROCEDURE t_check_dates();
+
+--Test data
+INSERT INTO "public"."User" ("Id", "Name", "PhoneNumber", "Password", "BirthDate", "CreditAmount") VALUES
+(DEFAULT, 'Mike', '8937241422', 'admin', '1997-08-31', 0),
+(DEFAULT, 'Fox', '19993332425', '123', '2019-05-27', 0);
+
+INSERT INTO "public"."Car" ("Id", "OwnerId", "Model", "Description", "Year", "Mileage", "Vin", "ImageUrl", "Type", "Transmission", "LocationId") VALUES
+(DEFAULT, 1, 'tesla', '-', 2011, 10000, 'QWERTYQWERTY12345', null, null, null, null),
+(DEFAULT, 2, 'jaguar f-pace', 'cool', 2018, 2000, 'ABCDE12345FGH0987', null, null, null, null);
+
+INSERT INTO "public"."Availability" ("Id", "CarId", "TimeStart", "TimeEnd") VALUES
+(DEFAULT, 1, '2019-05-27 18:57:06.552000', '2019-10-27 18:57:12.987000'),
+(DEFAULT, 2, '2019-05-27 18:57:06.552000', '2019-10-27 18:57:12.987000');
+
+INSERT INTO "public"."Location" ("Id", "CarId", "City", "Latitude", "Longitude") VALUES
+(DEFAULT, 2, 'Penza', 53.19475, 45.013747);
 
 
 -- +goose Down
