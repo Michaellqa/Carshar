@@ -24,8 +24,9 @@ CREATE TABLE "Car" (
 
 CREATE TABLE "Price" (
 	"CarId" INTEGER,
-	"TimeUnit" VARCHAR(4) NOT NULL UNIQUE,
-	"Amount" DECIMAL NOT NULL
+	"Hour" DECIMAL,
+	"Day" DECIMAL,
+	"Week" DECIMAL
 );
 
 CREATE TABLE "Availability" (
@@ -117,8 +118,8 @@ FOR EACH ROW EXECUTE PROCEDURE t_check_dates();
 
 --Test data
 INSERT INTO "public"."User" ("Id", "Name", "PhoneNumber", "Password", "BirthDate", "CreditAmount") VALUES
-(DEFAULT, 'Mike', '8937241422', 'admin', '1997-08-31', 0),
-(DEFAULT, 'Fox', '19993332425', '123', '2019-05-27', 0);
+(DEFAULT, 'Mike', '8937241422', 'admin', '1997-08-31', 295),
+(DEFAULT, 'Fox', '19993332425', '123', '2019-05-27', 1928.30);
 
 INSERT INTO "public"."Car" ("Id", "OwnerId", "Model", "Description", "Year", "Mileage", "Vin", "ImageUrl", "Type", "Transmission", "LocationId") VALUES
 (DEFAULT, 1, 'tesla', '-', 2011, 10000, 'QWERTYQWERTY12345', null, null, null, null),
@@ -130,6 +131,9 @@ INSERT INTO "public"."Availability" ("Id", "CarId", "TimeStart", "TimeEnd") VALU
 
 INSERT INTO "public"."Location" ("Id", "CarId", "City", "Latitude", "Longitude") VALUES
 (DEFAULT, 2, 'Penza', 53.19475, 45.013747);
+
+INSERT INTO "public"."Price" ("CarId", "Hour", "Day", "Week") VALUES
+(2, 5, 25, 150);
 
 
 -- +goose Down

@@ -39,7 +39,7 @@ SELECT "Id", "Model", "Year", "Image", "Mileage" FROM "Car"
 WHERE "Id" = $1;
 `
 	SqlCarPrices = `
-SELECT "TimeUnit", "Price" FROM "Price"
+SELECT "Hour", "Day", "Week" FROM "Price"
 WHERE "CarId" = $1;
 `
 	SqlCarDates = `
@@ -264,16 +264,23 @@ func (r *RentDb) CarPrices(carId int) ([]PriceItem, error) {
 		log.Println(err)
 		return nil, err
 	}
-	var (
-		price  PriceItem
-		prices []PriceItem
-	)
+	var prices []PriceItem
 	for rows.Next() {
-		if err := rows.Scan(&price.TimeUnit, &price.Price); err != nil {
+		var hour, day, week sql.NullFloat64
+		if err := rows.Scan(&hour, &day, &week); err != nil {
 			log.Println(err)
 			continue
 		}
-		prices = append(prices, price)
+
+		if hour.Valid {
+			prices = append(prices, PriceItem{carId, "hour", hour.Float64})
+		}
+		if day.Valid {
+			prices = append(prices, PriceItem{carId, "day", day.Float64})
+		}
+		if week.Valid {
+			prices = append(prices, PriceItem{carId, "week", week.Float64})
+		}
 	}
 	return prices, nil
 }

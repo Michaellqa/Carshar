@@ -19,14 +19,6 @@ func NewRentHandler(db dal.CarsharRepository) RentHandler {
 	return RentHandler{db: db}
 }
 
-/* Accept json:
-{
-	"startTime"
-	"endTime"
-	"total": float64
-}
-*/
-
 func (h RentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json charset=utf-8")
 	fmt.Println("rent:", r.URL)

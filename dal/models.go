@@ -14,6 +14,7 @@ type User struct {
 	Phone     string    `json:"phone"`
 	Password  string    `json:"password"`
 	BirthDate time.Time `json:"birthDate"`
+	Balance   float64   `json:"balance"`
 }
 
 type Car struct {
