@@ -39,14 +39,6 @@ func (h AddDateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//b, err := ioutil.ReadAll(r.Body)
-	//if err != nil {
-	//	log.Println(err)
-	//	return
-	//}
-	//
-	//fmt.Println(string(b))
-
 	var date dal.AvailableDate
 	if err := json.NewDecoder(r.Body).Decode(&date); err != nil {
 		log.Println(err)

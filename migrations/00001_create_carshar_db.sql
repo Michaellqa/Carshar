@@ -12,13 +12,13 @@ CREATE TABLE "Car" (
 	"Id" SERIAL PRIMARY KEY,
 	"OwnerId" INTEGER NOT NULL,
 	"Model" TEXT NOT NULL,
-	"Description" TEXT,
+	"Description" TEXT DEFAULT "",
 	"Year" INTEGER NOT NULL,
 	"Mileage" INTEGER NOT NULL default 0,
 	"Vin" VARCHAR(17) NOT NULL UNIQUE,
-	"ImageUrl" TEXT,
-	"Type" VARCHAR(20),
-	"Transmission" VARCHAR(10),
+	"ImageUrl" TEXT DEFAULT "",
+	"Type" VARCHAR(20) DEFAULT "",
+	"Transmission" VARCHAR(10) DEFAULT "",
 	"LocationId" INTEGER
 );
 

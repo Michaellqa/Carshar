@@ -30,12 +30,12 @@ SELECT "Id", "Model"
 from "Car" WHERE "OwnerId" = $1
 `
 	SqlUserRentedCars = `
-SELECT "Model" FROM "Car" INNER JOIN "Rent"
-ON "Rent"."CarId" = "Car"."Id"
-WHERE "Rent"."RenterId" = $1;
+SELECT "Car"."Id", "Model" FROM "Car" INNER JOIN "Reservation"
+ON "Reservation"."CarId" = "Car"."Id"
+WHERE "Reservation"."RenterId" = $1;
 `
 	SqlFindCar = `
-SELECT "Id", "Model", "Year", "Image", "Mileage" FROM "Car"
+SELECT "Id", "Model", "Year", "ImageUrl", "Mileage" FROM "Car"
 WHERE "Id" = $1;
 `
 	SqlCarPrices = `
@@ -43,27 +43,27 @@ SELECT "Hour", "Day", "Week" FROM "Price"
 WHERE "CarId" = $1;
 `
 	SqlCarDates = `
-SELECT "StartTime", "EndTime" FROM "Date"
+SELECT "TimeStart", "TimeEnd" FROM "Availability"
 WHERE "CarId" = $1;
 `
 	SqlCreateRent = `
-INSERT INTO "Rent" ("CarId", "RenterId", "StartDate", "EndDate", "TotalPrice") VALUES 
+INSERT INTO "Reservation" ("RenterId", "CarId", "StartDate", "EstimatedEndDate", "CalculatedTotalPrice") VALUES 
 ($1, $2, $3, $4, $5);
 `
 	SqlRentHistory = `
-SELECT "CarId", "StartTime", "EndTime", "TotalPrice" FROM "Rent"
+SELECT "CarId", "TimeStart", "TimeEnd", "TotalPrice" FROM "Reservation"
 WHERE "UserId" = $1;
 `
 	SqlCreateCar = `
-INSERT INTO "Car" ("OwnerId", "Model", "Year", "Image", "Mileage", "Vin") VALUES 
-($1, $2, $3, $4, $5, $6)
+INSERT INTO "Car" ("OwnerId", "Model", "Year", "Mileage", "Vin") VALUES 
+($1, $2, $3, $4, $5)
 `
-	SqlCreatePrice = `
-INSERT INTO "Price" ("CarId", "TimeUnit", "Price") VALUES 
-($1, $2, $3)
-`
+	//	SqlCreatePrice = `
+	//INSERT INTO "Price" ("CarId", "TimeUnit", "Price") VALUES
+	//($1, $2, $3)
+	//`
 	SqlCreateDate = `
-INSERT INTO "Date" ("CarId", "StartTime", "EndTime") VALUES 
+INSERT INTO "Availability" ("CarId", "TimeStart", "TimeEnd") VALUES 
 ($1, $2, $3)
 `
 )
@@ -157,7 +157,8 @@ func (r *RentDb) FindCar(id int) (car CarFullDescription, err error) {
 
 	row := r.db.QueryRow(SqlFindCar, id)
 
-	err = row.Scan(&car.Id, &car.Model, &car.Year, &car.Image, &car.Mileage)
+	var imageUrl sql.NullString
+	err = row.Scan(&car.Id, &car.Model, &car.Year, &imageUrl, &car.Mileage)
 	if err != nil {
 		log.Println(err)
 		return CarFullDescription{}, err
@@ -184,20 +185,29 @@ func (r *RentDb) FindCar(id int) (car CarFullDescription, err error) {
 		return CarFullDescription{}, err
 	}
 	for rows.Next() {
-		p := PriceItem{}
-		err := rows.Scan(&p.TimeUnit, &p.Price)
+		var hour, day, week sql.NullFloat64
+		err := rows.Scan(&hour, &day, &week)
 		if err != nil {
 			log.Println(err)
 			continue
 		}
-		car.Prices = append(car.Prices, p)
+
+		if hour.Valid {
+			car.Prices = append(car.Prices, PriceItem{id, "hour", hour.Float64})
+		}
+		if day.Valid {
+			car.Prices = append(car.Prices, PriceItem{id, "day", hour.Float64})
+		}
+		if week.Valid {
+			car.Prices = append(car.Prices, PriceItem{id, "week", hour.Float64})
+		}
 	}
 
 	return car, nil
 }
 
 func (r *RentDb) CreateCar(car Car) (bool, error) {
-	_, err := r.db.Exec(SqlCreateCar, car.OwnerId, car.Model, car.Year, car.Image, car.Mileage, car.Vin)
+	_, err := r.db.Exec(SqlCreateCar, car.OwnerId, car.Model, car.Year, car.Mileage, car.Vin)
 	if err != nil {
 		if err.(*pq.Error).Code == "23505" {
 			return false, nil
@@ -209,10 +219,7 @@ func (r *RentDb) CreateCar(car Car) (bool, error) {
 }
 
 func (r *RentDb) CreateRent(rent Rent) error {
-
-	//TODO use procedure
-
-	_, err := r.db.Exec(SqlCreateRent, rent.CarId, rent.RenterId, rent.StartTime, rent.EndTime, rent.Total)
+	_, err := r.db.Exec(SqlCreateRent, rent.RenterId, rent.CarId, rent.StartTime, rent.EndTime, rent.Total)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -221,7 +228,19 @@ func (r *RentDb) CreateRent(rent Rent) error {
 }
 
 func (r *RentDb) CreatePrice(carId int, p PriceItem) error {
-	_, err := r.db.Exec(SqlCreatePrice, carId, p.TimeUnit, p.Price)
+
+	query := `INSERT INTO "Price" ("CarId", "%s") VALUES ($1, $2);`
+
+	switch p.TimeUnit {
+	case "hour":
+		query = fmt.Sprintf(query, "Hour")
+	case "day":
+		query = fmt.Sprintf(query, "Day")
+	case "week":
+		query = fmt.Sprintf(query, "Week")
+	}
+
+	_, err := r.db.Exec(query, carId, p.Price)
 	if err != nil {
 		log.Println(err)
 		return err
