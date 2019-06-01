@@ -52,3 +52,19 @@ func (a *UserDb) FindUser(phone string) (User, bool, error) {
 	}
 	return u, true, nil
 }
+
+func (a *UserDb) TransferMoney(from, to int, amount float64) error {
+	SqlChangeAmount := `UPDATE "User" SET "CreditAmount" = "CreditAmount" + $1  WHERE "Id" = $2;`
+	//begin-end transaction
+	_, err := a.db.Exec(SqlChangeAmount, from, -amount)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	_, err = a.db.Exec(SqlChangeAmount, to, amount)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	return nil
+}

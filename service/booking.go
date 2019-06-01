@@ -27,6 +27,12 @@ func (p *BookingProvider) CreateBooking(rent dal.Rent) (int, error) {
 		return -1, err
 	}
 
+	err = p.user.TransferMoney(rent.RenterId, car.OwnerId, rent.CalculatedTotal)
+	if err != nil {
+		log.Println(err)
+		return -1, err
+	}
+
 	payment := dal.Payment{
 		Amount:     rent.CalculatedTotal,
 		SenderId:   rent.RenterId,
