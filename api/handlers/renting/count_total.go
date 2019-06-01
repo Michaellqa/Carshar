@@ -30,7 +30,7 @@ func (h TotalPriceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	carId, idOk := carIdParam(r)
+	carId, idOk := intIdParam(r)
 	startTime, endTime, datesOk := dateParams(r)
 	if !idOk || !datesOk {
 		w.WriteHeader(400)
@@ -50,7 +50,7 @@ func (h TotalPriceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func carIdParam(r *http.Request) (int, bool) {
+func intIdParam(r *http.Request) (int, bool) {
 	id, ok := mux.Vars(r)["id"]
 	if !ok {
 		return -1, false

@@ -47,6 +47,7 @@ func provideServer(port int, done chan struct{}) *api.Server {
 	analyticsDb := dal.NewAnalyticsDb(pDb)
 
 	carManager := service.NewCarManager(carDb)
+	bookingProvider := service.NewBookingProvider(authDb, carDb, carManager)
 
 	authHandler := auth.NewAuthHandler(authDb)
 	userHandler := auth.NewCreateUserHandler(authDb)
@@ -64,7 +65,9 @@ func provideServer(port int, done chan struct{}) *api.Server {
 	pricesHandler := car.NewPricesHandler(carDb)
 
 	totalHandler := renting.NewTotalHandler(carDb)
-	rentHandler := renting.NewRentHandler(carDb)
+	rentHandler := renting.NewRentHandler(carManager, bookingProvider)
+
+	carRentsHandler := renting.NewCarBookingsHandler(carDb)
 
 	analyticsHandler := analytics.NewAnalyticsHandler(analyticsDb)
 
@@ -82,6 +85,7 @@ func provideServer(port int, done chan struct{}) *api.Server {
 		pricesHandler,
 		totalHandler,
 		rentHandler,
+		carRentsHandler,
 		analyticsHandler,
 	)
 

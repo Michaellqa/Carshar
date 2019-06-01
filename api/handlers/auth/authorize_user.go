@@ -8,10 +8,10 @@ import (
 )
 
 type AuthorizeHandler struct {
-	db *dal.AuthDb
+	db *dal.UserDb
 }
 
-func NewAuthHandler(db *dal.AuthDb) AuthorizeHandler {
+func NewAuthHandler(db *dal.UserDb) AuthorizeHandler {
 	return AuthorizeHandler{db: db}
 }
 

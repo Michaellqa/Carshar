@@ -3,6 +3,7 @@ package renting
 import (
 	"Carshar/api/handlers/auth"
 	"Carshar/dal"
+	"Carshar/service"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -12,11 +13,15 @@ import (
 )
 
 type RentHandler struct {
-	db *dal.RentDb
+	car  *service.CarManager
+	rent *service.BookingProvider
 }
 
-func NewRentHandler(db *dal.RentDb) RentHandler {
-	return RentHandler{db: db}
+func NewRentHandler(
+	car *service.CarManager,
+	rent *service.BookingProvider,
+) RentHandler {
+	return RentHandler{car: car, rent: rent}
 }
 
 func (h RentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -28,7 +33,7 @@ func (h RentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(403)
 		return
 	}
-	carId, ok := carIdParam(r)
+	carId, ok := intIdParam(r)
 	if !ok {
 		w.WriteHeader(400)
 		return
@@ -40,31 +45,41 @@ func (h RentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(400)
 		return
 	}
+
 	rent.RenterId = uid
 	rent.CarId = carId
-
-	//fmt.Println(rent)
 
 	var total float64
 	if total, err = h.totalPrice(carId, rent.StartTime, rent.EndTime); err != nil {
 		log.Println(err)
-		w.WriteHeader(409)
+		w.WriteHeader(400)
 		return
 	}
 
 	if total != rent.CalculatedTotal {
 		log.Println(total, "!=", rent.CalculatedTotal)
+		w.WriteHeader(409)
 		return
 	}
 
-	if err = h.db.CreateRent(rent); err != nil {
+	bookId, err := h.rent.CreateBooking(rent)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(500)
+	}
+
+	resp := struct {
+		Id int `json:"id"`
+	}{Id: bookId}
+
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		log.Println(err)
 		w.WriteHeader(500)
 	}
 }
 
 func (h RentHandler) totalPrice(carId int, start, end time.Time) (float64, error) {
-	prices, err := h.db.CarPrices(carId)
+	prices, err := h.car.GetPrices(carId)
 	if err != nil || len(prices) == 0 {
 		return 0, err
 	}

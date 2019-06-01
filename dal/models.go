@@ -6,6 +6,9 @@ const (
 	PricePerHour = "hour"
 	PricePerDay  = "day"
 	PricePerWeek = "week"
+
+	RentStatusActive    = "active"
+	RentStatusCancelled = "cancelled"
 )
 
 type User struct {
@@ -53,10 +56,12 @@ type Rent struct {
 	StartTime       time.Time `json:"startTime"`
 	EndTime         time.Time `json:"endTime"`
 	CalculatedTotal float64   `json:"total"`
+	PaymentId       int       `json:"payment_id"`
 }
 
 type CarFullDescription struct {
 	Id      int             `json:"-"`
+	OwnerId int             `json:"owner_id"`
 	Model   string          `json:"model"`
 	Year    int             `json:"year"`
 	Mileage int             `json:"mileage"`
@@ -81,4 +86,12 @@ type CarRentingStatus struct {
 type Coordinate struct {
 	Latitude  float64 `json:"latitude"`
 	Longitude float64 `json:"longitude"`
+}
+
+type Payment struct {
+	Id         int       `json:"id"`
+	Amount     float64   `json:"amount"`
+	Date       time.Time `json:"date"`
+	SenderId   int       `json:"sender_id"`
+	ReceiverId int       `json:"receiver_id"`
 }

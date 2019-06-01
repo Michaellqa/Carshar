@@ -29,10 +29,6 @@ SELECT "Car"."Id", "Model" FROM "Car" INNER JOIN "Reservation"
 ON "Reservation"."CarId" = "Car"."Id"
 WHERE "Reservation"."RenterId" = $1;
 `
-	SqlFindCar = `
-SELECT "Id", "Model", "Year", "ImageUrl", "Mileage" FROM "Car"
-WHERE "Id" = $1;
-`
 	SqlCarPrices = `
 SELECT "Hour", "Day", "Week" FROM "Price"
 WHERE "CarId" = $1;
@@ -40,10 +36,6 @@ WHERE "CarId" = $1;
 	SqlCarDates = `
 SELECT "TimeStart", "TimeEnd" FROM "Availability"
 WHERE "CarId" = $1;
-`
-	SqlCreateRent = `
-INSERT INTO "Reservation" ("RenterId", "CarId", "StartDate", "EstimatedEndDate", "CalculatedTotalPrice") VALUES 
-($1, $2, $3, $4, $5);
 `
 	SqlRentHistory = `
 SELECT "CarId", "TimeStart", "TimeEnd", "TotalPrice" FROM "Reservation"
@@ -152,12 +144,13 @@ func (r *RentDb) UserRentedCars(uid int) ([]CarRentingStatus, error) {
 	return cars, err
 }
 
+//todo: move to car service
 func (r *RentDb) FindCar(id int) (car CarFullDescription, err error) {
-
+	SqlFindCar := `SELECT "Id", "OwnerId" "Model", "Year", "ImageUrl", "Mileage" FROM "Car"WHERE "Id" = $1;`
 	row := r.db.QueryRow(SqlFindCar, id)
 
 	var imageUrl sql.NullString
-	err = row.Scan(&car.Id, &car.Model, &car.Year, &imageUrl, &car.Mileage)
+	err = row.Scan(&car.Id, &car.OwnerId, &car.Model, &car.Year, &imageUrl, &car.Mileage)
 	if err != nil {
 		log.Println(err)
 		return CarFullDescription{}, err
@@ -269,13 +262,33 @@ func (r *RentDb) DeletePricesForCar(carId int) error {
 	return nil
 }
 
-func (r *RentDb) CreateRent(rent Rent) error {
-	_, err := r.db.Exec(SqlCreateRent, rent.RenterId, rent.CarId, rent.StartTime, rent.EndTime, rent.CalculatedTotal)
+func (r *RentDb) CreateRent(rent Rent) (int, error) {
+	SqlCreateRent := `
+INSERT INTO "Reservation" ("RenterId", "CarId", "StartDate", "EstimatedEndDate", "CalculatedTotalPrice", "PaymentId") VALUES 
+($1, $2, $3, $4, $5, $6) RETURNING "Id";`
+	var rentId int
+	err := r.db.QueryRow(SqlCreateRent,
+		rent.RenterId,
+		rent.CarId,
+		rent.StartTime,
+		rent.EndTime,
+		rent.CalculatedTotal,
+		rent.PaymentId).Scan(&rentId)
+	if err != nil {
+		log.Println(err)
+		return -1, err
+	}
+	return rentId, nil
+}
+
+func (r *RentDb) CancelRent(id int) error {
+	SqlCancelPayment := `UPDATE "Reservation" SET "Status" = "cancelled" WHERE "Id" = $1;`
+	_, err := r.db.Exec(SqlCancelPayment, id)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
-	return nil
+	return err
 }
 
 func (r *RentDb) CreatePrice(carId int, p CarPrices) error {
@@ -385,6 +398,15 @@ func (r *RentDb) CarRents(id int) ([]Rent, error) {
 	return rents, nil
 }
 
-func (r *RentDb) CancelRent() {
-
+func (r *RentDb) CreatePayment(p Payment) (int, error) {
+	SqlCreatePayment := `
+INSERT INTO "Payment" ("Id", "Amount", "Timestamp", "SenderId", "ReceiverId") VALUES
+(DEFAULT, $1, now(), $2, $3);`
+	var paymentId int
+	err := r.db.QueryRow(SqlCreatePayment, p.Amount, p.SenderId, p.ReceiverId).Scan(&paymentId)
+	if err != nil {
+		log.Println(err)
+		return -1, err
+	}
+	return paymentId, nil
 }

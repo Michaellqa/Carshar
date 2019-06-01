@@ -14,6 +14,10 @@ func NewCarManager(db *dal.RentDb) *CarManager {
 	return &CarManager{db: db}
 }
 
+func (m *CarManager) Get(id int) (dal.CarFullDescription, error) {
+	return m.db.FindCar(id)
+}
+
 func (m *CarManager) AddCar(car dal.Car) (bool, error) {
 	return m.db.CreateCar(car)
 }

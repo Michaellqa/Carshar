@@ -17,15 +17,15 @@ WHERE "Phone" = $1;
 `
 )
 
-type AuthDb struct {
+type UserDb struct {
 	db *sql.DB
 }
 
-func NewAuthDb(db *sql.DB) *AuthDb {
-	return &AuthDb{db: db}
+func NewAuthDb(db *sql.DB) *UserDb {
+	return &UserDb{db: db}
 }
 
-func (a *AuthDb) CreateUser(u User) (bool, error) {
+func (a *UserDb) CreateUser(u User) (bool, error) {
 	_, err := a.db.Exec(SqlCreateUser, u.Phone, u.Password, u.Name, u.BirthDate)
 
 	if err != nil {
@@ -39,7 +39,7 @@ func (a *AuthDb) CreateUser(u User) (bool, error) {
 	return true, nil
 }
 
-func (a *AuthDb) FindUser(phone string) (User, bool, error) {
+func (a *UserDb) FindUser(phone string) (User, bool, error) {
 	var u User
 
 	err := a.db.QueryRow(SqlFindUser, phone).Scan(&u.Id, &u.Phone, &u.Password, &u.Name, &u.BirthDate)
