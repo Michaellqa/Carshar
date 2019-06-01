@@ -39,6 +39,13 @@ type PriceItem struct {
 	Price    float64 `json:"price"`
 }
 
+type CarPrices struct {
+	CarId int     `json:"carId"`
+	Hour  float64 `json:"hour"`
+	Day   float64 `json:"day"`
+	Week  float64 `json:"week"`
+}
+
 type Rent struct {
 	Id              int       `json:"-"`
 	CarId           int       `json:"carId"`

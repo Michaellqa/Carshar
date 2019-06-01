@@ -278,20 +278,9 @@ func (r *RentDb) CreateRent(rent Rent) error {
 	return nil
 }
 
-func (r *RentDb) CreatePrice(carId int, p PriceItem) error {
-
-	query := `INSERT INTO "Price" ("CarId", "%s") VALUES ($1, $2);`
-
-	switch p.TimeUnit {
-	case "hour":
-		query = fmt.Sprintf(query, "Hour")
-	case "day":
-		query = fmt.Sprintf(query, "Day")
-	case "week":
-		query = fmt.Sprintf(query, "Week")
-	}
-
-	_, err := r.db.Exec(query, carId, p.Price)
+func (r *RentDb) CreatePrice(carId int, p CarPrices) error {
+	query := `INSERT INTO "Price" ("CarId", "%s", "%s", "%s") VALUES ($1, $2, $3, $4);`
+	_, err := r.db.Exec(query, carId, p.Hour, p.Day, p.Week)
 	if err != nil {
 		log.Println(err)
 		return err

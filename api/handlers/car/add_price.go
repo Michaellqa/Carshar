@@ -3,6 +3,7 @@ package car
 import (
 	"Carshar/api/handlers/auth"
 	"Carshar/dal"
+	"Carshar/service"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -12,11 +13,11 @@ import (
 )
 
 type AddPriceHandler struct {
-	db *dal.RentDb
+	car *service.CarManager
 }
 
-func NewAddPriceHandler(db *dal.RentDb) AddPriceHandler {
-	return AddPriceHandler{db: db}
+func NewAddPriceHandler(car *service.CarManager) AddPriceHandler {
+	return AddPriceHandler{car: car}
 }
 
 func (h AddPriceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -47,7 +48,7 @@ func (h AddPriceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println(price)
 
-	err = h.db.CreatePrice(int(carId), price)
+	err = h.car.AddPrice(int(carId), price)
 	if err != nil {
 		w.WriteHeader(502)
 	}

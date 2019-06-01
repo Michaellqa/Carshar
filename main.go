@@ -7,6 +7,7 @@ import (
 	"Carshar/api/handlers/car"
 	"Carshar/api/handlers/renting"
 	"Carshar/dal"
+	"Carshar/service"
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
@@ -45,6 +46,8 @@ func provideServer(port int, done chan struct{}) *api.Server {
 	carDb := dal.NewRentDb(pDb)
 	analyticsDb := dal.NewAnalyticsDb(pDb)
 
+	carManager := service.NewCarManager(carDb)
+
 	authHandler := auth.NewAuthHandler(authDb)
 	userHandler := auth.NewCreateUserHandler(authDb)
 
@@ -55,7 +58,7 @@ func provideServer(port int, done chan struct{}) *api.Server {
 	userRentedCarsHandler := car.NewUserRentedCarsHandler(carDb)
 
 	addDateHandler := car.NewAddDateHandler(carDb)
-	addPriceHandler := car.NewAddPriceHandler(carDb)
+	addPriceHandler := car.NewAddPriceHandler(carManager)
 
 	datesHandler := car.NewDatesHandler(carDb)
 	pricesHandler := car.NewPricesHandler(carDb)

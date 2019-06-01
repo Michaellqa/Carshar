@@ -12,13 +12,13 @@ CREATE TABLE "Car" (
 	"Id" SERIAL PRIMARY KEY,
 	"OwnerId" INTEGER NOT NULL,
 	"Model" TEXT NOT NULL,
-	"Description" TEXT DEFAULT "",
+	"Description" TEXT DEFAULT '',
 	"Year" INTEGER NOT NULL,
 	"Mileage" INTEGER NOT NULL default 0,
-	"Vin" VARCHAR(17) NOT NULL UNIQUE,
-	"ImageUrl" TEXT DEFAULT "",
-	"Type" VARCHAR(20) DEFAULT "",
-	"Transmission" VARCHAR(10) DEFAULT "",
+	"Vin" VARCHAR (17) NOT NULL UNIQUE,
+	"ImageUrl" TEXT DEFAULT '',
+	"Type" VARCHAR (20) DEFAULT '',
+	"Transmission" VARCHAR(10) DEFAULT '',
 	"LocationId" INTEGER
 );
 
@@ -38,6 +38,7 @@ CREATE TABLE "Availability" (
 
 CREATE TABLE "Reservation" (
 	"Id" SERIAL PRIMARY KEY,
+	"Status" VARCHAR(10) NOT NULL DEFAULT 'active',
 	"RenterId" INTEGER,
 	"CarId" INTEGER,
 	"StartDate" TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -116,7 +117,7 @@ $func$
 CREATE TRIGGER "check_dates_of_rent" BEFORE INSERT ON "Reservation"
 FOR EACH ROW EXECUTE PROCEDURE t_check_dates();
 
---Test data
+
 INSERT INTO "public"."User" ("Id", "Name", "PhoneNumber", "Password", "BirthDate", "CreditAmount") VALUES
 (DEFAULT, 'Mike', '8937241422', 'admin', '1997-08-31', 295),
 (DEFAULT, 'Fox', '19993332425', '123', '2019-05-27', 1928.30);
