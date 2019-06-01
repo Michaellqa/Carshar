@@ -12,10 +12,10 @@ import (
 )
 
 type DatesHandler struct {
-	db dal.CarsharRepository
+	db *dal.RentDb
 }
 
-func NewDatesHandler(db dal.CarsharRepository) DatesHandler {
+func NewDatesHandler(db *dal.RentDb) DatesHandler {
 	return DatesHandler{db: db}
 }
 

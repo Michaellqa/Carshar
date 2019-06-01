@@ -8,11 +8,6 @@ import (
 	"time"
 )
 
-/*
-	RemoveDate(did int) error
-	RentHistory(uid int) (History, error)
-*/
-
 const (
 	SqlAvailableCarsForDate = `
 SELECT ac."Id", "Model", "Year", "Latitude", "Longitude"
@@ -58,6 +53,7 @@ WHERE "UserId" = $1;
 INSERT INTO "Car" ("OwnerId", "Model", "Year", "Mileage", "Vin") VALUES 
 ($1, $2, $3, $4, $5)
 `
+
 	//	SqlCreatePrice = `
 	//INSERT INTO "Price" ("CarId", "TimeUnit", "Price") VALUES
 	//($1, $2, $3)
@@ -65,6 +61,9 @@ INSERT INTO "Car" ("OwnerId", "Model", "Year", "Mileage", "Vin") VALUES
 	SqlCreateDate = `
 INSERT INTO "Availability" ("CarId", "TimeStart", "TimeEnd") VALUES 
 ($1, $2, $3)
+`
+	SqlCarRents = `
+SELECT "Id", "RenterId", "CalculatedTotalPrice" FROM "Reservation" WHERE "CarId" = $1;
 `
 )
 
@@ -218,8 +217,60 @@ func (r *RentDb) CreateCar(car Car) (bool, error) {
 	return true, nil
 }
 
+func (r *RentDb) DeleteCar(id int) error {
+	SqlDeleteCar := `DELETE FROM "Car" WHERE "Id" = $1;`
+	_, err := r.db.Exec(SqlDeleteCar, id)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	return nil
+}
+
+func (r *RentDb) RentsOfTheCar(carId int) ([]Rent, error) {
+
+	query := `SELECT "RenterId", "CalculatedTotalPrice" FROM "Reservation" WHERE "CarId" = 2;`
+	var rents []Rent
+
+	rows, err := r.db.Query(query)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	for rows.Next() {
+		r := Rent{}
+		err = rows.Scan(r.RenterId, r.CalculatedTotal)
+		if err != nil {
+			log.Println("car was missed", err)
+			continue
+		}
+		rents = append(rents, r)
+	}
+	return rents, nil
+}
+
+func (r *RentDb) DeleteAvailabilityForCar(carId int) error {
+	query := `DELETE FROM "Availability" WHERE "CarId" = $1`
+	_, err := r.db.Exec(query, carId)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	return nil
+}
+
+func (r *RentDb) DeletePricesForCar(carId int) error {
+	SqlDeleteCar := `DELETE FROM "Price" WHERE "CarId" = $1;`
+	_, err := r.db.Exec(SqlDeleteCar, carId)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	return nil
+}
+
 func (r *RentDb) CreateRent(rent Rent) error {
-	_, err := r.db.Exec(SqlCreateRent, rent.RenterId, rent.CarId, rent.StartTime, rent.EndTime, rent.Total)
+	_, err := r.db.Exec(SqlCreateRent, rent.RenterId, rent.CarId, rent.StartTime, rent.EndTime, rent.CalculatedTotal)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -314,7 +365,7 @@ func (r *RentDb) RentHistory(uid int) ([]Rent, error) {
 	rents := make([]Rent, 0)
 	for rows.Next() {
 		r := Rent{}
-		err := rows.Scan(&r.CarId, &r.RenterId, &r.StartTime, &r.EndTime, &r.Total)
+		err := rows.Scan(&r.CarId, &r.RenterId, &r.StartTime, &r.EndTime, &r.CalculatedTotal)
 		if err != nil {
 			log.Println(err)
 			continue
@@ -323,4 +374,28 @@ func (r *RentDb) RentHistory(uid int) ([]Rent, error) {
 	}
 
 	return rents, nil
+}
+
+func (r *RentDb) CarRents(id int) ([]Rent, error) {
+	rows, err := r.db.Query(SqlCarRents, id)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	var rents []Rent
+	for rows.Next() {
+		rent := Rent{}
+		if err := rows.Scan(&rent.Id, &rent.RenterId, &rent.CalculatedTotal); err != nil {
+			log.Println(err)
+			continue
+		}
+		rents = append(rents, rent)
+	}
+
+	return rents, nil
+}
+
+func (r *RentDb) CancelRent() {
+
 }

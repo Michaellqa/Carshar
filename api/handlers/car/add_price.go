@@ -12,10 +12,10 @@ import (
 )
 
 type AddPriceHandler struct {
-	db dal.CarsharRepository
+	db *dal.RentDb
 }
 
-func NewAddPriceHandler(db dal.CarsharRepository) AddPriceHandler {
+func NewAddPriceHandler(db *dal.RentDb) AddPriceHandler {
 	return AddPriceHandler{db: db}
 }
 

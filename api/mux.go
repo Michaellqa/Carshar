@@ -34,7 +34,7 @@ func NewMux(
 	mx.Handle("/user", authHandler).Methods(http.MethodGet)
 
 	mx.Handle("/cars", addCarHandler).Methods(http.MethodPost)
-	mx.Handle("/cars", carListHandler).Methods(http.MethodGet)
+	mx.Handle("/cars", JsonMiddleware(carListHandler)).Methods(http.MethodGet)
 	mx.Handle("/cars/{id}", findCarHandler).Methods(http.MethodGet)
 	mx.Handle("/users/{id}/cars/my", userCarsHandler).Methods(http.MethodGet)
 	mx.Handle("/users/{id}/cars/rented", userRentedCarsHandler).Methods(http.MethodGet)
@@ -51,4 +51,11 @@ func NewMux(
 	mx.Handle("/cars/{id}/analytics", analyticsHandler).Methods(http.MethodGet)
 
 	return mx
+}
+
+func JsonMiddleware(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "application/json charset=utf-8")
+		h.ServeHTTP(w, r)
+	})
 }

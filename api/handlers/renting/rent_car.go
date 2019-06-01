@@ -12,15 +12,14 @@ import (
 )
 
 type RentHandler struct {
-	db dal.CarsharRepository
+	db *dal.RentDb
 }
 
-func NewRentHandler(db dal.CarsharRepository) RentHandler {
+func NewRentHandler(db *dal.RentDb) RentHandler {
 	return RentHandler{db: db}
 }
 
 func (h RentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "application/json charset=utf-8")
 	fmt.Println("rent:", r.URL)
 
 	uid, err := auth.UserToken(r)
@@ -53,8 +52,8 @@ func (h RentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if total != rent.Total {
-		log.Println(total, "!=", rent.Total)
+	if total != rent.CalculatedTotal {
+		log.Println(total, "!=", rent.CalculatedTotal)
 		return
 	}
 

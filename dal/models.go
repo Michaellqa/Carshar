@@ -40,12 +40,12 @@ type PriceItem struct {
 }
 
 type Rent struct {
-	Id        int       `json:"-"`
-	CarId     int       `json:"carId"`
-	RenterId  int       `json:"renterId"`
-	StartTime time.Time `json:"startTime"`
-	EndTime   time.Time `json:"endTime"`
-	Total     float64   `json:"total"`
+	Id              int       `json:"-"`
+	CarId           int       `json:"carId"`
+	RenterId        int       `json:"renterId"`
+	StartTime       time.Time `json:"startTime"`
+	EndTime         time.Time `json:"endTime"`
+	CalculatedTotal float64   `json:"total"`
 }
 
 type CarFullDescription struct {

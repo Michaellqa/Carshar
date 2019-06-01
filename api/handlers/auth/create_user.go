@@ -8,10 +8,10 @@ import (
 )
 
 type CreateUserHandler struct {
-	db dal.AuthRepository
+	db *dal.AuthDb
 }
 
-func NewCreateUserHandler(db dal.AuthRepository) CreateUserHandler {
+func NewCreateUserHandler(db *dal.AuthDb) CreateUserHandler {
 	return CreateUserHandler{db: db}
 }
 
