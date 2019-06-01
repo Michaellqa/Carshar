@@ -8,12 +8,8 @@ import (
 
 const (
 	SqlCreateUser = `
-INSERT INTO "User"("Phone", "Password", "Name", "BirthDate") VALUES 
+INSERT INTO "User"("PhoneNumber", "Password", "Name", "BirthDate") VALUES 
 ($1, $2, $3, $4);
-`
-	SqlFindUser = `
-SELECT "Id", "Phone", "Password", "Name", "BirthDate" FROM "User"
-WHERE "Phone" = $1;
 `
 )
 
@@ -40,9 +36,10 @@ func (a *UserDb) CreateUser(u User) (bool, error) {
 }
 
 func (a *UserDb) FindUser(phone string) (User, bool, error) {
+	SqlFindUser := `SELECT "Id", "PhoneNumber", "Password", "Name", "BirthDate", "CreditAmount" FROM "User" WHERE "PhoneNumber" = $1;`
 	var u User
 
-	err := a.db.QueryRow(SqlFindUser, phone).Scan(&u.Id, &u.Phone, &u.Password, &u.Name, &u.BirthDate)
+	err := a.db.QueryRow(SqlFindUser, phone).Scan(&u.Id, &u.Phone, &u.Password, &u.Name, &u.BirthDate, &u.Balance)
 	if err == sql.ErrNoRows {
 		return u, false, nil
 	}
@@ -53,15 +50,27 @@ func (a *UserDb) FindUser(phone string) (User, bool, error) {
 	return u, true, nil
 }
 
+func (a *UserDb) GetUser(id int) (User, error) {
+	SqlFindUser := `SELECT "Id", "PhoneNumber", "Password", "Name", "BirthDate", "CreditAmount" FROM "User" WHERE "Id" = $1;`
+	var u User
+
+	err := a.db.QueryRow(SqlFindUser, id).Scan(&u.Id, &u.Phone, &u.Password, &u.Name, &u.BirthDate, &u.Balance)
+	if err != nil {
+		log.Println(err)
+		return u, err
+	}
+	return u, nil
+}
+
 func (a *UserDb) TransferMoney(from, to int, amount float64) error {
 	SqlChangeAmount := `UPDATE "User" SET "CreditAmount" = "CreditAmount" + $1  WHERE "Id" = $2;`
 	//begin-end transaction
-	_, err := a.db.Exec(SqlChangeAmount, from, -amount)
+	_, err := a.db.Exec(SqlChangeAmount, -amount, from)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
-	_, err = a.db.Exec(SqlChangeAmount, to, amount)
+	_, err = a.db.Exec(SqlChangeAmount, amount, to)
 	if err != nil {
 		log.Println(err)
 		return err

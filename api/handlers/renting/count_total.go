@@ -2,6 +2,7 @@ package renting
 
 import (
 	"Carshar/api/handlers/auth"
+	"Carshar/api/handlers/csurl"
 	"Carshar/dal"
 	"encoding/json"
 	"fmt"
@@ -9,7 +10,6 @@ import (
 	"log"
 	"math"
 	"net/http"
-	"strconv"
 	"time"
 )
 
@@ -30,7 +30,7 @@ func (h TotalPriceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	carId, idOk := intIdParam(r)
+	carId, idOk := csurl.IntIdParam(r)
 	startTime, endTime, datesOk := dateParams(r)
 	if !idOk || !datesOk {
 		w.WriteHeader(400)
@@ -48,18 +48,6 @@ func (h TotalPriceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		w.WriteHeader(500)
 	}
-}
-
-func intIdParam(r *http.Request) (int, bool) {
-	id, ok := mux.Vars(r)["id"]
-	if !ok {
-		return -1, false
-	}
-	carId, err := strconv.ParseInt(id, 10, 0)
-	if err != nil {
-		return -1, false
-	}
-	return int(carId), true
 }
 
 func dateParams(r *http.Request) (start, end time.Time, ok bool) {

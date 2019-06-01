@@ -13,6 +13,7 @@ import (
 func NewMux(
 	createUserHandler auth.CreateUserHandler,
 	authHandler auth.AuthorizeHandler,
+	userInfoHandler auth.UserInfoHandler,
 
 	addCarHandler car.AddCarHandler,
 	carListHandler car.CarListHandler,
@@ -34,11 +35,12 @@ func NewMux(
 
 	mx.Handle("/user", authHandler).Methods(http.MethodGet)
 	mx.Handle("/users", createUserHandler).Methods(http.MethodPost)
+	mx.Handle("/users/{id}", jsonContent(userInfoHandler)).Methods(http.MethodGet)
 	mx.Handle("/users/{id}/cars/my", userCarsHandler).Methods(http.MethodGet)
 	mx.Handle("/users/{id}/cars/rented", userRentedCarsHandler).Methods(http.MethodGet)
 
 	mx.Handle("/cars", addCarHandler).Methods(http.MethodPost)
-	mx.Handle("/cars", JsonMiddleware(carListHandler)).Methods(http.MethodGet)
+	mx.Handle("/cars", jsonContent(carListHandler)).Methods(http.MethodGet)
 	mx.Handle("/cars/{id}", findCarHandler).Methods(http.MethodGet)
 	mx.Handle("/cars/{id}/dates", dateHandler).Methods(http.MethodGet)
 	mx.Handle("/cars/{id}/dates", addDateHandler).Methods(http.MethodPost)
@@ -55,7 +57,7 @@ func NewMux(
 	return mx
 }
 
-func JsonMiddleware(h http.Handler) http.Handler {
+func jsonContent(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json charset=utf-8")
 		h.ServeHTTP(w, r)

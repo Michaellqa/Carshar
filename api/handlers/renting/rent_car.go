@@ -2,6 +2,7 @@ package renting
 
 import (
 	"Carshar/api/handlers/auth"
+	"Carshar/api/handlers/csurl"
 	"Carshar/dal"
 	"Carshar/service"
 	"encoding/json"
@@ -33,7 +34,7 @@ func (h RentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(403)
 		return
 	}
-	carId, ok := intIdParam(r)
+	carId, ok := csurl.IntIdParam(r)
 	if !ok {
 		w.WriteHeader(400)
 		return

@@ -146,11 +146,11 @@ func (r *RentDb) UserRentedCars(uid int) ([]CarRentingStatus, error) {
 
 //todo: move to car service
 func (r *RentDb) FindCar(id int) (car CarFullDescription, err error) {
-	SqlFindCar := `SELECT "Id", "OwnerId" "Model", "Year", "ImageUrl", "Mileage" FROM "Car"WHERE "Id" = $1;`
+	SqlFindCar := `SELECT "Id", "OwnerId", "Model", "Year", "ImageUrl" FROM "Car"WHERE "Id" = $1;`
 	row := r.db.QueryRow(SqlFindCar, id)
 
 	var imageUrl sql.NullString
-	err = row.Scan(&car.Id, &car.OwnerId, &car.Model, &car.Year, &imageUrl, &car.Mileage)
+	err = row.Scan(&car.Id, &car.OwnerId, &car.Model, &car.Year, &imageUrl)
 	if err != nil {
 		log.Println(err)
 		return CarFullDescription{}, err
@@ -401,7 +401,7 @@ func (r *RentDb) CarRents(id int) ([]Rent, error) {
 func (r *RentDb) CreatePayment(p Payment) (int, error) {
 	SqlCreatePayment := `
 INSERT INTO "Payment" ("Id", "Amount", "Timestamp", "SenderId", "ReceiverId") VALUES
-(DEFAULT, $1, now(), $2, $3);`
+(DEFAULT, $1, now(), $2, $3) RETURNING "Id";`
 	var paymentId int
 	err := r.db.QueryRow(SqlCreatePayment, p.Amount, p.SenderId, p.ReceiverId).Scan(&paymentId)
 	if err != nil {

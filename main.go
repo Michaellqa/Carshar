@@ -44,6 +44,7 @@ func provideServer(port int, done chan struct{}) *api.Server {
 
 	authDb := dal.NewAuthDb(pDb)
 	carDb := dal.NewRentDb(pDb)
+
 	analyticsDb := dal.NewAnalyticsDb(pDb)
 
 	carManager := service.NewCarManager(carDb)
@@ -51,6 +52,7 @@ func provideServer(port int, done chan struct{}) *api.Server {
 
 	authHandler := auth.NewAuthHandler(authDb)
 	userHandler := auth.NewCreateUserHandler(authDb)
+	userInfoHandler := auth.NewUserInfoHandler(authDb)
 
 	addCarHandler := car.NewAddCarHandler(carDb)
 	carListHandler := car.NewCarListHandler(carDb)
@@ -74,6 +76,7 @@ func provideServer(port int, done chan struct{}) *api.Server {
 	mx := api.NewMux(
 		userHandler,
 		authHandler,
+		userInfoHandler,
 		addCarHandler,
 		carListHandler,
 		findCarHandler,
