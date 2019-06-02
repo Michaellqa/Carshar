@@ -50,10 +50,7 @@ INSERT INTO "Car" ("OwnerId", "Model", "Year", "Mileage", "Vin") VALUES
 	//INSERT INTO "Price" ("CarId", "TimeUnit", "Price") VALUES
 	//($1, $2, $3)
 	//`
-	SqlCreateDate = `
-INSERT INTO "Availability" ("CarId", "TimeStart", "TimeEnd") VALUES 
-($1, $2, $3)
-`
+
 )
 
 type RentDb struct {
@@ -279,8 +276,18 @@ INSERT INTO "Reservation" ("RenterId", "CarId", "StartDate", "EstimatedEndDate",
 }
 
 func (r *RentDb) CancelRent(id int) error {
-	SqlCancelPayment := `UPDATE "Reservation" SET "Status" = "cancelled" WHERE "Id" = $1;`
-	_, err := r.db.Exec(SqlCancelPayment, id)
+	sqlCancelPayment := `UPDATE "Reservation" SET "Status" = "cancelled" WHERE "Id" = $1;`
+	_, err := r.db.Exec(sqlCancelPayment, id)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	return err
+}
+
+func (r *RentDb) CancelRentsOfCar(carId int) error {
+	sqlCancelRents := `UPDATE "Reservation" SET "Status" = "cancelled" WHERE "CarId" = $1`
+	_, err := r.db.Exec(sqlCancelRents, carId)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -299,6 +306,7 @@ func (r *RentDb) CreatePrice(carId int, p CarPrices) error {
 }
 
 func (r *RentDb) CreateDate(carId int, d AvailableDate) error {
+	SqlCreateDate := `INSERT INTO "Availability" ("CarId", "TimeStart", "TimeEnd") VALUES($1, $2, $3)`
 	_, err := r.db.Exec(SqlCreateDate, carId, d.StartTime, d.EndTime)
 	if err != nil {
 		log.Println(err)
@@ -407,4 +415,15 @@ INSERT INTO "Payment" ("Id", "Amount", "Timestamp", "SenderId", "ReceiverId") VA
 		return -1, err
 	}
 	return paymentId, nil
+}
+
+func (r *RentDb) Payment(pid int) (Payment, error) {
+	payment := Payment{}
+	sqlFindPayment := `SELECT "SenderId", "ReceiverId", "Amount" FROM "Payment" WHERE "Id" = $1`
+	err := r.db.QueryRow(sqlFindPayment, pid).Scan(&payment.SenderId, &payment.SenderId, &payment.Amount)
+	if err != nil {
+		log.Println(err)
+		return payment, err
+	}
+	return payment, nil
 }

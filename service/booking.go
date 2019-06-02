@@ -56,6 +56,33 @@ func (p *BookingProvider) CreateBooking(rent dal.Rent) (int, error) {
 	return rentId, nil
 }
 
-func (p *BookingProvider) CancelBooking() {
+//todo: do the same with sql
+func (p *BookingProvider) CancelBookings(carId int) error {
+	rents, err := p.db.CarRents(carId)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
 
+	for _, r := range rents {
+		payment, err := p.db.Payment(r.PaymentId)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+
+		reverted := dal.Payment{
+			SenderId:   payment.ReceiverId,
+			ReceiverId: payment.SenderId,
+			Amount:     payment.Amount,
+		}
+
+		_, err = p.db.CreatePayment(reverted)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+	}
+
+	return p.db.CancelRentsOfCar(carId)
 }
