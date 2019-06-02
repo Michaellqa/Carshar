@@ -30,6 +30,7 @@ func NewMux(
 	carRentsHandler renting.CarBookingsHandler,
 
 	analyticsHandler analytics.AnalyticsHandler,
+	deleteCarHandler car.DeleteCarHandler,
 ) http.Handler {
 	mx := mux.NewRouter()
 
@@ -41,7 +42,7 @@ func NewMux(
 
 	mx.Handle("/cars", addCarHandler).Methods(http.MethodPost)
 	mx.Handle("/cars", jsonContent(carListHandler)).Methods(http.MethodGet)
-	mx.Handle("/cars/{id}", findCarHandler).Methods(http.MethodGet)
+	mx.Handle("/cars/{id}", jsonContent(findCarHandler)).Methods(http.MethodGet)
 	mx.Handle("/cars/{id}/dates", dateHandler).Methods(http.MethodGet)
 	mx.Handle("/cars/{id}/dates", addDateHandler).Methods(http.MethodPost)
 	//mx.Handle("/cars/{id}/dates", rentHandler).Methods(http.MethodDelete)
@@ -53,6 +54,7 @@ func NewMux(
 	mx.Handle("/cars/{id}/rents", carRentsHandler).Methods(http.MethodGet)
 	mx.Handle("/cars/{id}/rents", defaultHandler()).Methods(http.MethodDelete)
 	mx.Handle("/cars/{id}/analytics", analyticsHandler).Methods(http.MethodGet)
+	mx.Handle("/cars/{id}", jsonContent(deleteCarHandler)).Methods(http.MethodDelete)
 
 	return mx
 }

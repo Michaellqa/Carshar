@@ -18,7 +18,6 @@ func NewFindCarHandler(db *dal.RentDb) FindCarHandler {
 }
 
 func (h FindCarHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "application/json charset=utf-8")
 
 	id, ok := mux.Vars(r)["id"]
 	if !ok {
@@ -36,6 +35,7 @@ func (h FindCarHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(400)
+		return
 	}
 
 	if err := json.NewEncoder(w).Encode(desc); err != nil {

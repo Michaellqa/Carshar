@@ -54,9 +54,6 @@ INSERT INTO "Car" ("OwnerId", "Model", "Year", "Mileage", "Vin") VALUES
 INSERT INTO "Availability" ("CarId", "TimeStart", "TimeEnd") VALUES 
 ($1, $2, $3)
 `
-	SqlCarRents = `
-SELECT "Id", "RenterId", "CalculatedTotalPrice" FROM "Reservation" WHERE "CarId" = $1;
-`
 )
 
 type RentDb struct {
@@ -379,6 +376,7 @@ func (r *RentDb) RentHistory(uid int) ([]Rent, error) {
 }
 
 func (r *RentDb) CarRents(id int) ([]Rent, error) {
+	SqlCarRents := `SELECT "Id", "RenterId", "CalculatedTotalPrice" FROM "Reservation" WHERE "CarId" = $1;`
 	rows, err := r.db.Query(SqlCarRents, id)
 	if err != nil {
 		log.Println(err)

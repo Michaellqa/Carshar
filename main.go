@@ -72,6 +72,7 @@ func provideServer(port int, done chan struct{}) *api.Server {
 	carRentsHandler := renting.NewCarBookingsHandler(carDb)
 
 	analyticsHandler := analytics.NewAnalyticsHandler(analyticsDb)
+	deleteCarHandler := car.NewDeleteCarHandler()
 
 	mx := api.NewMux(
 		userHandler,
@@ -90,6 +91,7 @@ func provideServer(port int, done chan struct{}) *api.Server {
 		rentHandler,
 		carRentsHandler,
 		analyticsHandler,
+		deleteCarHandler,
 	)
 
 	return api.NewServer(port, mx, done)

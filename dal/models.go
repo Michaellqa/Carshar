@@ -50,7 +50,7 @@ type CarPrices struct {
 }
 
 type Rent struct {
-	Id              int       `json:"-"`
+	Id              int       `json:"id"`
 	CarId           int       `json:"carId"`
 	RenterId        int       `json:"renterId"`
 	StartTime       time.Time `json:"startTime"`
@@ -60,7 +60,7 @@ type Rent struct {
 }
 
 type CarFullDescription struct {
-	Id      int             `json:"-"`
+	Id      int             `json:"id"`
 	OwnerId int             `json:"owner_id"`
 	Model   string          `json:"model"`
 	Year    int             `json:"year"`

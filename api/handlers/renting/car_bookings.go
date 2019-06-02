@@ -21,13 +21,13 @@ func (h CarBookingsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	_, err := auth.UserToken(r)
 	if err != nil {
-		w.WriteHeader(403)
+		w.WriteHeader(http.StatusForbidden)
 		return
 	}
 
 	carId, ok := csurl.IntIdParam(r)
 	if !ok {
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
