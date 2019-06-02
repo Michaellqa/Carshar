@@ -205,8 +205,21 @@ func (r *RentDb) CreateCar(car Car) (bool, error) {
 }
 
 func (r *RentDb) DeleteCar(id int) error {
-	SqlDeleteCar := `DELETE FROM "Car" WHERE "Id" = $1;`
-	_, err := r.db.Exec(SqlDeleteCar, id)
+	//todo: cascade/delete_before
+	sqlDeleteRents := `DELETE FROM "Reservation" WHERE "CarId" = $1;`
+	_, err := r.db.Exec(sqlDeleteRents, id)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	sqlDeleteDates := `DELETE FROM "Availability" WHERE "CarId" = $1;`
+	_, err = r.db.Exec(sqlDeleteDates, id)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	sqlDeleteCar := `DELETE FROM "Car" WHERE "Id" = $1;`
+	_, err = r.db.Exec(sqlDeleteCar, id)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -286,13 +299,13 @@ func (r *RentDb) CancelRent(id int) error {
 }
 
 func (r *RentDb) CancelRentsOfCar(carId int) error {
-	sqlCancelRents := `UPDATE "Reservation" SET "Status" = "cancelled" WHERE "CarId" = $1`
+	sqlCancelRents := `UPDATE "Reservation" SET "Status" = 'cancelled' WHERE "CarId" = $1`
 	_, err := r.db.Exec(sqlCancelRents, carId)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
-	return err
+	return nil
 }
 
 func (r *RentDb) CreatePrice(carId int, p CarPrices) error {
@@ -384,7 +397,8 @@ func (r *RentDb) RentHistory(uid int) ([]Rent, error) {
 }
 
 func (r *RentDb) CarRents(id int) ([]Rent, error) {
-	SqlCarRents := `SELECT "Id", "RenterId", "CalculatedTotalPrice" FROM "Reservation" WHERE "CarId" = $1;`
+	SqlCarRents := `SELECT "Id", "RenterId", "CalculatedTotalPrice", "PaymentId" FROM "Reservation" 
+WHERE "CarId" = $1 AND "Status" = 'active';`
 	rows, err := r.db.Query(SqlCarRents, id)
 	if err != nil {
 		log.Println(err)
@@ -394,7 +408,7 @@ func (r *RentDb) CarRents(id int) ([]Rent, error) {
 	var rents []Rent
 	for rows.Next() {
 		rent := Rent{}
-		if err := rows.Scan(&rent.Id, &rent.RenterId, &rent.CalculatedTotal); err != nil {
+		if err := rows.Scan(&rent.Id, &rent.RenterId, &rent.CalculatedTotal, &rent.PaymentId); err != nil {
 			log.Println(err)
 			continue
 		}
@@ -420,7 +434,7 @@ INSERT INTO "Payment" ("Id", "Amount", "Timestamp", "SenderId", "ReceiverId") VA
 func (r *RentDb) Payment(pid int) (Payment, error) {
 	payment := Payment{}
 	sqlFindPayment := `SELECT "SenderId", "ReceiverId", "Amount" FROM "Payment" WHERE "Id" = $1`
-	err := r.db.QueryRow(sqlFindPayment, pid).Scan(&payment.SenderId, &payment.SenderId, &payment.Amount)
+	err := r.db.QueryRow(sqlFindPayment, pid).Scan(&payment.SenderId, &payment.ReceiverId, &payment.Amount)
 	if err != nil {
 		log.Println(err)
 		return payment, err

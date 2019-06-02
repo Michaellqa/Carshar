@@ -23,6 +23,10 @@ func (m *CarManager) AddCar(car dal.Car) (bool, error) {
 }
 
 func (m *CarManager) DeleteCar(carId int) error {
+	err := m.db.DeletePricesForCar(carId)
+	if err != nil {
+		return err
+	}
 	return m.db.DeleteCar(carId)
 }
 

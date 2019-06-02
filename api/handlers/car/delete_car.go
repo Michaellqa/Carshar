@@ -1,30 +1,32 @@
 package car
 
 import (
-	"Carshar/dal"
+	"Carshar/api/handlers/csurl"
+	"Carshar/service"
 	"net/http"
 )
 
 type DeleteCarHandler struct {
-	db *dal.RentDb
+	car *service.CarManager
 }
 
-func NewDeleteCarHandler() DeleteCarHandler {
-	return DeleteCarHandler{}
+func NewDeleteCarHandler(car *service.CarManager) DeleteCarHandler {
+	return DeleteCarHandler{car: car}
 }
 
 //money are kept by service till booking ends, after that scheduler
 //check all unfinished transactions and pay to the renter
 
-// cars/{id}/delete
+// cars/{id} [Delete]
 func (h DeleteCarHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
-	//find all bookings of the car[id]
+	carId, ok := csurl.IntIdParam(r)
+	if !ok {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
-	//get that amount back to renters
-
-	//cancel all rents
-
-	//delete car
-
+	if err := h.car.DeleteCar(carId); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	}
 }

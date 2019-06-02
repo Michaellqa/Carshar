@@ -36,9 +36,13 @@ func (h CarBookingsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+	if len(bookings) == 0 {
+		return
+	}
+
 	err = json.NewEncoder(w).Encode(bookings)
 	if err != nil {
 		log.Println(err)
-		w.Write([]byte("[]"))
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 }

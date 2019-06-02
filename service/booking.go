@@ -77,6 +77,12 @@ func (p *BookingProvider) CancelBookings(carId int) error {
 			Amount:     payment.Amount,
 		}
 
+		err = p.user.TransferMoney(reverted.SenderId, reverted.ReceiverId, reverted.Amount)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+
 		_, err = p.db.CreatePayment(reverted)
 		if err != nil {
 			log.Println(err)

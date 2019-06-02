@@ -6,7 +6,6 @@ import (
 	"Carshar/api/handlers/car"
 	"Carshar/api/handlers/renting"
 	"github.com/gorilla/mux"
-	"log"
 	"net/http"
 )
 
@@ -29,6 +28,7 @@ func NewMux(
 	rentHandler renting.RentHandler,
 	carRentsHandler renting.CarBookingsHandler,
 
+	cancelBookingsHandler renting.CancelBookingsHandler,
 	analyticsHandler analytics.AnalyticsHandler,
 	deleteCarHandler car.DeleteCarHandler,
 ) http.Handler {
@@ -52,7 +52,7 @@ func NewMux(
 	mx.Handle("/cars/{id}/{start-date}/{end-date}/total", totalHandler).Methods(http.MethodGet)
 	mx.Handle("/cars/{id}/rent", rentHandler).Methods(http.MethodPost)
 	mx.Handle("/cars/{id}/rents", carRentsHandler).Methods(http.MethodGet)
-	mx.Handle("/cars/{id}/rents", defaultHandler()).Methods(http.MethodDelete)
+	mx.Handle("/cars/{id}/rents/cancel", cancelBookingsHandler).Methods(http.MethodGet)
 	mx.Handle("/cars/{id}/analytics", analyticsHandler).Methods(http.MethodGet)
 	mx.Handle("/cars/{id}", jsonContent(deleteCarHandler)).Methods(http.MethodDelete)
 
@@ -66,8 +66,8 @@ func jsonContent(h http.Handler) http.Handler {
 	})
 }
 
-func defaultHandler() http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Println("Not yet implemented")
-	})
-}
+//func defaultHandler() http.Handler {
+//	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+//		log.Println("Not yet implemented")
+//	})
+//}

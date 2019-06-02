@@ -2,13 +2,12 @@ package car
 
 import (
 	"Carshar/api/handlers/auth"
+	"Carshar/api/handlers/csurl"
 	"Carshar/dal"
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	"strconv"
 )
 
 type DatesHandler struct {
@@ -22,18 +21,13 @@ func NewDatesHandler(db *dal.RentDb) DatesHandler {
 func (h DatesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json charset=utf-8")
 
-	id, ok := mux.Vars(r)["id"]
+	carId, ok := csurl.IntIdParam(r)
 	if !ok {
 		w.WriteHeader(400)
 		return
 	}
-	carId, err := strconv.ParseInt(id, 10, 0)
-	if err != nil {
-		w.WriteHeader(400)
-		return
-	}
 
-	_, err = auth.UserToken(r)
+	_, err := auth.UserToken(r)
 	if err != nil {
 		w.WriteHeader(403)
 		return

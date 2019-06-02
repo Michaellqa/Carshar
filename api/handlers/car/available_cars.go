@@ -45,7 +45,6 @@ func (h CarListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println("AvailableCarsForDate")
 	cars, err = h.db.AvailableCarsForDate(int(uid), start, end)
 
 	if err != nil {
